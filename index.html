@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Ein Stern über Bethlehem – Kapitel 1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="wrap">
+  <canvas id="game" width="960" height="540"></canvas>
+  <div id="sentence">&nbsp;</div>
+  <div id="ui">
+    <div id="verbs"></div>
+    <div id="inv">
+      <div id="invTitle">Inventar</div>
+      <div id="invItems"></div>
+    </div>
+    <div id="choices" class="hidden"></div>
+  </div>
+
+  <div id="title" class="overlay">
+    <h1>&#10022; Ein Stern über Bethlehem &#10022;</h1>
+    <h2>Ein Point-&amp;-Click-Adventure nach den Evangelien &middot; Kapitel&nbsp;1&nbsp;&amp;&nbsp;2</h2>
+    <p class="intro">
+      Judäa, vor über zweitausend Jahren. Seltsame Dinge geschehen im Land:
+      Dem alten Priester Zacharias ist im Tempel ein Engel erschienen &ndash; seitdem ist er stumm.
+      Und aus Nazaret flüstert man, ein Engel habe einem Mädchen namens Maria verkündet,
+      sie werde den Sohn Gottes zur Welt bringen. <em>(Lukas&nbsp;1)</em>
+    </p>
+    <p>
+      Doch davon weißt du noch nichts. Du bist <strong>Joel</strong>, der jüngste Hirte
+      auf den Feldern bei Bethlehem. Es ist eine ganz normale Nacht.<br>Noch.
+    </p>
+    <p class="hint">Steuerung: Verb anklicken, dann etwas in der Szene anklicken.<br>
+      Bei &bdquo;Benutze&ldquo; und &bdquo;Gib&ldquo; zuerst einen Gegenstand im Inventar wählen.</p>
+    <button id="startBtn">Spiel starten</button>
+  </div>
+
+  <div id="ending" class="overlay hidden">
+    <h1>&#10022;</h1>
+    <p class="verse">&bdquo;Da stand Josef auf und floh noch in der Nacht mit dem Kind und dessen
+      Mutter nach Ägypten. So erfüllte sich, was der Herr durch den Propheten gesagt hat:
+      Aus Ägypten habe ich meinen Sohn gerufen.&ldquo;</p>
+    <p class="verseref">&mdash; Matthäus 2,14&ndash;15</p>
+    <h2>ENDE VON KAPITEL 1 &amp; 2</h2>
+    <p>Demnächst in Kapitel 3: <em>Der zwölfjährige Jesus im Tempel</em> (Lukas 2,41&ndash;52) &ndash;
+      drei Tage Suche, ein verlorener Sohn und eine Antwort, die niemand erwartet.</p>
+    <button id="restartBtn">Noch einmal spielen</button>
+  </div>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
