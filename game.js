@@ -1,8 +1,8 @@
 'use strict';
 
 /* ============================================================
-   EIN STERN ÜBER BETHLEHEM – Kapitel 1
-   Ein Point-&-Click-Adventure nach Lukas 1–2
+   EIN STERN ÜBER BETHLEHEM – Kapitel 1–6
+   Ein Point-&-Click-Adventure nach Lukas 1–5 und Matthäus 2
    ============================================================ */
 
 const cv = document.getElementById('game');
@@ -19,7 +19,7 @@ const VERBS = ['Gehe zu', 'Schau an', 'Nimm', 'Rede mit', 'Benutze', 'Gib'];
 /* ---------------- Spielzustand ---------------- */
 
 const state = {
-  room: 'field',
+  room: 'feldtag',
   verb: 'Gehe zu',
   item: null,          // gewähltes Inventar-Item (für Benutze/Gib)
   inventory: [],
@@ -27,6 +27,12 @@ const state = {
 };
 
 const F = {              // Story-Flags
+  tookEimer: false,
+  eimerVoll: false,
+  traenkeVoll: false,
+  tookFloete: false,
+  floeteGiven: false,
+  tagDone: false,
   tookWood: false,
   tookStaff: false,
   fireLit: false,
@@ -40,6 +46,22 @@ const F = {              // Story-Flags
   tookKrug: false,
   soldierBusy: false,
   fleeing: false,
+  tookSchlauch: false,
+  schlauchVoll: false,
+  eselWasser: false,
+  dattelnTaken: false,
+  dattelnGiven: false,
+  abendDone: false,
+  toldRahel: false,
+  toldEli: false,
+  toldMirjam: false,
+  josefDa: false,
+  heimkehrDone: false,
+  simonMet: false,
+  netzeSauber: false,
+  bootAngefragt: false,
+  bootDraussen: false,
+  fangDone: false,
   ended: false,
 };
 
@@ -49,6 +71,10 @@ const fx = {             // animierte Werte
   angelGlow: 0,
   angelVisible: false,
   famX: 320,
+  abend: 0,           // 0 = Abendrot, 1 = Nacht (Raum 'aegypten')
+  sonne: 0,           // 0 = Nachmittag, 1 = Sonnenuntergang (Raum 'feldtag')
+  boot: 0,            // 0 = am Strand, 1 = zum Lehren, 1.5 = im Tiefen (Raum 'see')
+  boot2: 0,           // zweites Boot kommt zu Hilfe (Lukas 5,7)
   fade: 0,
 };
 
@@ -74,6 +100,20 @@ const ITEMS = {
   stab: { name: 'Hirtenstab', look: 'Mein treuer Hirtenstab. Gut gegen Wölfe, Langeweile und festgeklemmte Lämmer.' },
   lamm: { name: 'Lamm',       look: 'Das kleine Lamm. Es zittert noch ein bisschen und knabbert an meinem Ärmel.' },
   krug: { name: 'Weinkrug',   look: 'Ein bauchiger Krug süßer Wein vom verlassenen Marktstand. Ich habe eine Münze dagelassen – Hirtenehre.' },
+  schlauch: { name: 'Wasserschlauch',
+    get look() {
+      return F.schlauchVoll
+        ? 'Der Wasserschlauch ist prall gefüllt. Kühles Quellwasser – das beste Ägyptens, vermutlich.'
+        : 'Ein lederner Wasserschlauch vom Packsattel des Esels. Leer und knittrig wie Schimons Laune am Morgen.';
+    } },
+  datteln:  { name: 'Datteln', look: 'Eine ganze Rispe süßer Datteln, frisch von der Palme. Reiseproviant, wie ihn die Karawanen lieben.' },
+  eimer: { name: 'Eimer',
+    get look() {
+      return F.eimerVoll
+        ? 'Der Eimer ist randvoll mit kühlem Bachwasser. Nicht kleckern.'
+        : 'Ein hölzerner Eimer. Leer. Schreit förmlich nach dem Bach da drüben.';
+    } },
+  floete: { name: 'Hirtenflöte', look: 'Levis Hirtenflöte aus Schilfrohr. Sie sieht harmlos aus. Sie klingt nicht so.' },
 };
 
 function addItem(id)    { state.inventory.push(id); renderInv(); }
@@ -143,17 +183,24 @@ function updateSentence() {
 
 const ACTORS = {
   joel:     { color: '#f2f2f2', pos: () => [player.x, player.y - 128] },
-  levi:     { color: '#b8e070', pos: () => state.room === 'field' ? [468, 365] : state.room === 'city' ? [190, 372] : [225, 390] },
-  schimon:  { color: '#ffb060', pos: () => state.room === 'field' ? [295, 398] : state.room === 'city' ? [135, 370] : [150, 412] },
+  levi:     { color: '#b8e070', pos: () => state.room === 'see' ? [840, 382] : state.room === 'synagoge' ? [215, 380] : (state.room === 'field' || state.room === 'feldtag') ? [468, 365] : state.room === 'weg' ? [560, 370] : state.room === 'city' ? [190, 372] : [225, 390] },
+  schimon:  { color: '#ffb060', pos: () => state.room === 'feldtag' ? [295, 370] : state.room === 'field' ? [295, 398] : state.room === 'weg' ? [462, 374] : state.room === 'city' ? [135, 370] : [150, 412] },
   wirt:     { color: '#ff9a8a', pos: () => [530, 200] },
   waechter: { color: '#c8b8ff', pos: () => [722, 378] },
   katze:    { color: '#ffffff', pos: () => [318, 420] },
   engel:    { color: '#aef3ff', pos: () => [480, Math.max(60, fx.angelY - 95)] },
   chor:     { color: '#fff0a0', pos: () => [480, 150] },
-  maria:    { color: '#9fb6ff', pos: () => state.room === 'flucht' ? [258, 358] : [405, 392] },
-  josef:    { color: '#d8b48a', pos: () => state.room === 'flucht' ? [228, 326] : [560, 380] },
+  maria:    { color: '#9fb6ff', pos: () => state.room === 'aegypten' ? [700, 362] : state.room === 'flucht' ? [258, 358] : [405, 392] },
+  josef:    { color: '#d8b48a', pos: () => state.room === 'nazaret' ? [840, 372] : state.room === 'aegypten' ? [765, 358] : state.room === 'flucht' ? [228, 326] : [560, 380] },
+  rahel:    { color: '#ffb8d0', pos: () => [540, 372] },
+  eli:      { color: '#d8d870', pos: () => [720, 378] },
+  mirjam:   { color: '#a0e8d8', pos: () => [280, 425] },
+  jesus:    { color: '#ffe8b0', pos: () => state.room === 'see' ? (fx.boot > 0 ? [640 - fx.boot * 140, 310 - fx.boot * 55] : [255, 375]) : [480, 240] },
+  simon:    { color: '#8ad8f0', pos: () => fx.boot > 0 ? [640 - fx.boot * 140 + 30, 320 - fx.boot * 55] : [520, 380] },
+  menge:    { color: '#e0c8ff', pos: () => state.room === 'see' ? [210, 395] : [700, 380] },
   soldat:   { color: '#ff8a7a', pos: () => F.soldierBusy ? [690, 398] : [370, 374] },
-  esel:     { color: '#cabba8', pos: () => [430, 428] },
+  esel:     { color: '#cabba8', pos: () => state.room === 'aegypten' ? [450, 385] : [430, 428] },
+  kind:     { color: '#ffd8b0', pos: () => [706, 408] },
   erzaehler:{ color: '#9ad1ff', pos: () => [480, 60] },
   lamm:     { color: '#ffffff', pos: () => [840, 432] },
   schaf:    { color: '#ffffff', pos: () => [630, 420] },
@@ -285,11 +332,44 @@ async function dispatchVerb(hs, v, it) {
 async function intro() {
   await cutscene(async () => {
     await wait(500);
-    await say('erzaehler', 'Felder bei Bethlehem. Nachts. Irgendwann zwischen Lukas 1 und Lukas 2.');
-    await say('joel', 'Ich bin Joel. Hirte. Nachtschicht. Schon wieder.');
-    await say('joel', 'Das Lagerfeuer ist fast aus, Schimon schläft im Sitzen, und irgendwo blökt ein verlorenes Lamm.');
-    await say('joel', 'Na großartig. Dann wollen wir mal.');
+    await say('erzaehler', 'Felder bei Bethlehem. Später Nachmittag, irgendwann zwischen Lukas 1 und Lukas 2.');
+    await say('joel', 'Ich bin Joel. Hirte. Der Jüngste von uns dreien – das heißt: Ich mache die Arbeit.');
+    await say('schimon', 'JOEL! Bevor die Sonne untergeht, braucht die Herde Wasser. Die Tränke ist staubtrocken!');
+    await say('levi', 'Und meine Flöte ist WEG! Ohne Flöte kann ich nicht Wache halten! Die Nacht ist verloren!');
+    await say('joel', '(Wasser in die Tränke, Levis Flöte wiederfinden. Und das alles vor Sonnenuntergang.)');
+    await say('joel', '(Ein ganz normaler Tag.)');
   });
+}
+
+async function checkAbendrot() {
+  if (F.traenkeVoll && F.floeteGiven && !F.tagDone) {
+    F.tagDone = true;
+    await sonnenuntergang();
+  }
+}
+
+async function sonnenuntergang() {
+  await wait(700);
+  await say('schimon', 'Tränke voll, Flöte gefunden, Herde satt. Dann zählt durch, bevor das Licht geht!');
+  await say('joel', 'Eins, zwei, drei... achtzehn, neunzehn... zwanzig! Alle da, Schimon.');
+  await say('schimon', 'Zwanzig. Merk dir die Zahl, Junge. Nachts zählt man sie wieder.');
+  await say('levi', 'Und ich spiele das Abendlied! ♪ Fidel-di-düü... ♪');
+  await say('joel', '(Die Sonne flieht. Ich kann es ihr nicht verdenken.)');
+  await say('erzaehler', 'Die Sonne versinkt hinter den Hügeln Judäas...');
+  await animate(4500, p => { fx.sonne = p; });
+  await say('schimon', 'Joel, du hast die erste Wache. Levi die zweite. Ich übernehme die... Gesamtaufsicht. Im Sitzen.');
+  await say('joel', 'Du meinst: schlafen.');
+  await say('schimon', 'ÜBERWACHEN. Mit geschlossenen Augen. Das nennt man Erfahrung.');
+  await animate(1500, p => { fx.fade = p; });
+  state.room = 'field';
+  player.x = 560; player.y = 500;
+  player.tx = player.x; player.ty = player.y;
+  player.walking = false; player.facing = -1;
+  await animate(1200, p => { fx.fade = 1 - p; });
+  await say('erzaehler', 'Stunden später. Mitten in der Nacht.');
+  await say('joel', 'Schimon „überwacht“ mit beachtlicher Lautstärke, und das Lagerfeuer ist schon wieder fast aus.');
+  await say('joel', 'Und irgendwo blökt ein Lamm. Das klingt aber nicht, als läge es gemütlich bei der Herde...');
+  await say('joel', 'Na großartig. Dann wollen wir mal.');
 }
 
 async function lightFire() {
@@ -357,6 +437,29 @@ async function leaveField() {
   await walkPlayerTo(920, 470);
   await animate(900, p => { fx.fade = p; });
   await say('erzaehler', 'Noch in derselben Nacht eilten die Hirten nach Bethlehem... (Lukas 2,16)');
+  await wegSzene();
+  await arriveCity();
+}
+
+async function wegSzene() {
+  state.room = 'weg';
+  player.x = 40; player.y = 508; player.facing = 1;
+  await animate(900, p => { fx.fade = 1 - p; });
+  await walkPlayerTo(360, 502);
+  await say('levi', 'Schaut mal, wie nah Bethlehem schon ist! Man sieht sogar das Stadttor.');
+  await say('joel', 'Und der Stern... er steht GENAU über der Stadt. Als würde er auf sie zeigen.');
+  await say('schimon', 'Natürlich tut er das, Junge. Habt ihr zwei in der Schriftstunde wieder geschlafen?');
+  await say('levi', 'Nur bei den Geschlechtsregistern...');
+  await say('schimon', 'Schon der Seher Bileam hat es angekündigt, vor über tausend Jahren: „Es wird ein Stern aus Jakob aufgehen und ein Zepter aus Israel aufkommen.“ (4. Mose 24,17)');
+  await say('joel', 'Ein Stern... als Zeichen für einen König?');
+  await say('schimon', 'Für DEN König. Und der Prophet Micha schrieb: „Du, Bethlehem, bist keineswegs die kleinste – denn aus dir wird der kommen, der Herr über Israel ist.“ (Micha 5,1)');
+  await say('levi', 'Eine uralte Prophezeiung... und sie geht ausgerechnet in UNSERER Nachtschicht auf?');
+  await say('schimon', 'Sieht ganz so aus. Also trödelt nicht – einer Verheißung läuft man entgegen!');
+  await walkPlayerTo(920, 490);
+  await animate(900, p => { fx.fade = p; });
+}
+
+async function arriveCity() {
   state.room = 'city';
   player.x = 40; player.y = 505; player.facing = 1;
   await animate(900, p => { fx.fade = 1 - p; });
@@ -489,17 +592,312 @@ async function warnFamily() {
   await say('maria', 'Wir haben schon gepackt, Joel. Die Gaben der Weisen werden uns die Reise bezahlen.');
   await say('joel', 'Der Soldat ist abgelenkt. Ich mache den Esel fertig. SCHNELL!');
   await wait(600);
+  await say('josef', 'Joel... der Weg nach Süden ist weit, und Herodes hat überall Augen. Du kennst die Hirtenpfade um die Dörfer herum.');
+  await say('maria', 'Komm mit uns, Joel. Wenigstens bis an die Grenze Ägyptens.');
+  await say('joel', '(Schimon hütet die Herde, Levi hütet Schimon... die kommen ein paar Tage ohne mich aus.)');
+  await say('joel', 'Ich bringe euch hin. Über Hebron, dann der Karawanenweg – sechs Tagesmärsche bis Ägypten.');
   F.fleeing = true;
   fx.famX = 320;
-  await say('joel', 'Die Straße nach Süden ist frei. Über Hebron, dann der Karawanenweg – sechs Tagesmärsche bis Ägypten.');
   const dep = animate(7000, p => { fx.famX = 320 + p * 760; });
   await wait(900);
   await say('soldat', 'Hmm? Habt ihr wasch gesagt? ...*hicks*');
-  await say('joel', 'Zieht mit Gott. Und wenn alles vorbei ist... kommt heim.');
+  await walkPlayerTo(920, 508);
   await dep;
   await say('erzaehler', 'Da stand Josef auf und floh noch in der Nacht mit dem Kind und dessen Mutter nach Ägypten. (Matthäus 2,14)');
-  await say('erzaehler', 'So erfüllte sich, was der Herr durch den Propheten gesagt hat: „Aus Ägypten habe ich meinen Sohn gerufen.“ (Matthäus 2,15)');
-  await say('joel', 'Lauf, kleiner König. Die Welt ist noch lange nicht fertig mit dir.');
+  await animate(1800, p => { fx.fade = p; });
+  await chapterThree();
+}
+
+/* ============================================================
+   KAPITEL 3: AM RAND ÄGYPTENS (Matthäus 2 / Lukas 1)
+   ============================================================ */
+
+async function chapterThree() {
+  state.room = 'aegypten';
+  player.x = 60; player.y = 508;
+  player.tx = player.x; player.ty = player.y;
+  player.walking = false; player.facing = 1;
+  fx.abend = 0;
+  await animate(1200, p => { fx.fade = 1 - p; });
+  await say('erzaehler', 'KAPITEL 3: AM RAND ÄGYPTENS');
+  await say('erzaehler', 'Sechs Tagesmärsche später. Hinter Hebron, hinter der Wüste – am Abend liegt das Land Ägypten vor ihnen.');
+  await walkPlayerTo(300, 508);
+  await say('joel', 'Da... am Horizont! Was sind DAS für Berge? Die sind ja spitz wie Zeltdächer!');
+  await say('josef', 'Das sind die Pyramiden, Joel. Grabmäler der alten Könige Ägyptens. Sie standen schon, als Abraham hier durchzog.');
+  await say('joel', 'Und ich dachte immer, Schimons Schafpferch wäre ein beeindruckendes Bauwerk.');
+  await say('maria', 'Wir rasten hier an der Quelle. Das Kind braucht Ruhe – und der Esel erst recht.');
+  await say('josef', 'Joel, hilfst du mir? Der Esel braucht dringend Wasser, und unsere Vorräte sind aufgebraucht. An der Palme dort hängen Datteln.');
+  await say('joel', '(Wasser für den Esel, Datteln für die Familie. Ein Hirte packt an.)');
+}
+
+async function traenkeEsel() {
+  if (!F.schlauchVoll) { await say('joel', 'Der Schlauch ist leer. Ein leerer Schlauch hat noch keinen Esel glücklich gemacht.'); return; }
+  if (F.eselWasser) { await say('joel', 'Er hat genug. Mehr Wasser, und er schwappt beim Laufen.'); return; }
+  F.schlauchVoll = false;
+  F.eselWasser = true;
+  await say('joel', 'Ich gieße das Wasser in meine Hände... Er trinkt, als gäbe es kein Morgen.');
+  await say('esel', 'IAAH!');
+  await say('joel', 'Gern geschehen. Und den Schlauch fülle ich gleich nochmal für die Familie.');
+  await checkAbend();
+}
+
+async function checkAbend() {
+  if (F.eselWasser && F.dattelnGiven && !F.abendDone) {
+    F.abendDone = true;
+    await abendCutscene();
+  }
+}
+
+async function abendCutscene() {
+  await wait(700);
+  await say('erzaehler', 'Die Sonne sinkt hinter die Pyramiden. Das Lager ist versorgt, das Feuer brennt, das Kind schläft.');
+  await animate(4000, p => { fx.abend = p; });
+  await say('maria', 'Setz dich zu uns ans Feuer, Joel. Du hast uns den ganzen Weg geholfen – und nie gefragt, wie das alles eigentlich angefangen hat.');
+  await say('joel', 'Ich habe mich nicht getraut. Aber... ja. Wie fängt so etwas an?');
+  await say('maria', 'Mit einem ganz gewöhnlichen Tag in Nazaret. Ich war allein im Haus – und plötzlich stand er vor mir. Ein Engel. Gabriel.');
+  await say('maria', 'Er sagte: „Sei gegrüßt, du Begnadete! Der Herr ist mit dir.“ (Lukas 1,28)');
+  await say('joel', 'Ich wäre schreiend weggerannt. Frag Levi – wir haben da Erfahrung.');
+  await say('maria', 'Ich bin auch erschrocken, Joel. Aber er sagte: „Fürchte dich nicht, Maria, denn du hast Gnade bei Gott gefunden.“ (Lukas 1,30)');
+  await say('maria', '„Du wirst ein Kind empfangen und ihm den Namen Jesus geben. Er wird groß sein und Sohn des Höchsten genannt werden – und seine Herrschaft wird kein Ende haben.“ (Lukas 1,31-33)');
+  await say('joel', 'Und du? Was... sagt man auf so etwas?');
+  await say('maria', 'Ich habe gefragt, wie das geschehen soll. Und dann habe ich geantwortet: „Siehe, ich bin die Magd des Herrn; mir geschehe, wie du gesagt hast.“ (Lukas 1,38)');
+  await say('josef', 'Ein Satz, für den man mehr Mut braucht, als hundert Soldaten zusammen haben.');
+  await say('maria', 'Danach bin ich zu meiner Verwandten Elisabet ins Bergland geeilt. Als ich sie grüßte, hüpfte das Kind in ihrem Leib vor Freude. (Lukas 1,41)');
+  await say('maria', 'Und ich konnte auf einmal nur noch singen: „Meine Seele erhebt den Herrn, und mein Geist freut sich über Gott, meinen Retter.“ (Lukas 1,46-47)');
+  await say('kind', '(schläft friedlich weiter)');
+  await say('joel', 'Der Engel auf unserem Feld... der Stern... die Weisen... der Traum. Und ganz am Anfang: dein Ja.');
+  await say('maria', 'Gott vergisst nichts von dem, was er verspricht, Joel. Auch hier nicht, am Rand der Fremde.');
+  await say('erzaehler', 'Und sie blieben in Ägypten bis zum Tod des Herodes. So erfüllte sich, was der Herr durch den Propheten gesagt hat: „Aus Ägypten habe ich meinen Sohn gerufen.“ (Matthäus 2,15)');
+  await say('joel', '(Morgen kehre ich um – zu Schimon, Levi und zwanzig Schafen. Aber diese Geschichte erzähle ich am Lagerfeuer, solange ich lebe.)');
+  await animate(1800, p => { fx.fade = p; });
+  await chapterFour();
+}
+
+/* ============================================================
+   KAPITEL 4: HEIMKEHR NACH NAZARET (Matthäus 2,19-23)
+   ============================================================ */
+
+async function chapterFour() {
+  state.room = 'nazaret';
+  player.x = 60; player.y = 508;
+  player.tx = player.x; player.ty = player.y;
+  player.walking = false; player.facing = 1;
+  await animate(1200, p => { fx.fade = 1 - p; });
+  await say('erzaehler', 'KAPITEL 4: HEIMKEHR NACH NAZARET');
+  await say('erzaehler', 'Als Herodes gestorben war, erschien dem Josef in Ägypten der Engel des Herrn im Traum: „Steh auf, nimm das Kind und seine Mutter und zieh in das Land Israel!“ (Matthäus 2,19-20)');
+  await say('erzaehler', 'Doch weil in Judäa nun Archelaus herrschte, fürchtete sich Josef – und zog, einem Traum folgend, nach Galiläa, in die Stadt Nazaret. (Matthäus 2,22-23)');
+  await say('erzaehler', 'JAHRE SPÄTER. Aus dem jungen Joel ist ein Hirte mit eigener Herde geworden – und die besten Sommerweiden liegen im Norden: in Galiläa.');
+  await walkPlayerTo(300, 508);
+  await say('joel', 'Nazaret also. Gutes Gras, ein Brunnen vor der Stadt... und wenn ich richtig gehört habe, wohnt hier eine gewisse Familie aus Bethlehem.');
+  await say('joel', 'Kaum stehe ich fünf Minuten hier, schauen schon alle her. Hirten erkennt man eben... am Geruch, würde ein alter Freund sagen.');
+  await say('rahel', 'He! Du da! Bist DU der Hirte aus Bethlehem, von dem die ganze Stadt redet?');
+  await say('joel', '(Die ganze Stadt? Na, das kann ja heiter werden. Reden wir mit den Leuten.)');
+}
+
+async function checkHeimkehr() {
+  if (F.toldRahel && F.toldEli && F.toldMirjam && !F.heimkehrDone) {
+    F.heimkehrDone = true;
+    await heimkehrCutscene();
+  }
+}
+
+async function heimkehrCutscene() {
+  await wait(700);
+  F.josefDa = true;
+  await say('erzaehler', 'Gegen Abend kommt ein Mann den Weg von Nazaret herab – grauer im Bart, aber mit demselben festen Schritt.');
+  await say('josef', 'Joel? JOEL! Der Hirte von Bethlehem – auf meiner Weide!');
+  await say('joel', 'Josef! Ich habe gehofft, euch zu finden. Wie geht es euch? Wie geht es... ihm?');
+  await say('josef', 'Komm heute Abend zu uns, Maria wird sich freuen. Und der Junge... der Junge fragt nach allem. Nach Gott, nach den Schriften, nach dem Warum hinter jedem Warum.');
+  await say('joel', 'Klingt anstrengend.');
+  await say('josef', 'Es ist ein Geschenk.');
+  await say('erzaehler', 'Das Kind aber wuchs heran und wurde stark, erfüllt mit Weisheit, und Gottes Gnade ruhte auf ihm. (Lukas 2,40)');
+  await animate(1800, p => { fx.fade = p; });
+  await chapterFive();
+}
+
+/* ============================================================
+   KAPITEL 5: DIE SYNAGOGE VON NAZARET (Lukas 4,14-30)
+   ============================================================ */
+
+async function chapterFive() {
+  state.room = 'synagoge';
+  player.x = 60; player.y = 508;
+  player.tx = player.x; player.ty = player.y;
+  player.walking = false; player.facing = 1;
+  await animate(1200, p => { fx.fade = 1 - p; });
+  await say('erzaehler', 'KAPITEL 5: DIE SYNAGOGE VON NAZARET');
+  await say('erzaehler', 'WIEDER VERGEHEN JAHRE. Fast dreißig sind es nun seit jener Nacht von Bethlehem.');
+  await say('erzaehler', 'Im ganzen Land erzählt man von Johannes, der am Jordan tauft – und von einem, der zu ihm ans Wasser kam: Jesus von Nazaret. (Lukas 3,21-22)');
+  await say('erzaehler', 'Jesus kehrte, erfüllt von der Kraft des Geistes, nach Galiläa zurück. Er lehrte in den Synagogen, und alle priesen ihn. (Lukas 4,14-15)');
+  await say('joel', 'Ich bin grau geworden, meine Knie knirschen wie ein alter Stall – aber DAS lasse ich mir nicht entgehen.');
+  await walkPlayerTo(280, 508);
+  await say('joel', 'Heute liest Josefs Sohn am Sabbat aus der Schrift. Die halbe Stadt ist da... und da vorne sitzt doch... das gibt es nicht.');
+  await say('levi', 'JOEL! Alter Strauchdieb! Hier, ich habe dir einen Platz freigehalten!');
+  await say('joel', '(Levi. Natürlich. Wo etwas passiert, sitzt Levi in der ersten Reihe.)');
+}
+
+async function talkLeviSyn() {
+  await say('levi', 'Dass wir das noch erleben, Joel. Wir zwei. Wie damals auf dem Feld.');
+  let done = false;
+  while (!done) {
+    const c = await choose([
+      'Wie kommst DU denn nach Nazaret?',
+      'Was hört man über ihn?',
+      'Und... Schimon?',
+      'Still jetzt, es geht los.',
+    ]);
+    if (c === 0) {
+      await say('levi', 'Meine Tochter hat einen Zimmermann geheiratet. HIER. Ausgerechnet. Gott hat Humor, sage ich dir.');
+      await say('levi', 'Und ich spiele immer noch Flöte! Die Herden Galiläas kennen mich.');
+      await say('joel', 'Die Herden Galiläas FLIEHEN vor dir, Levi.');
+      await say('levi', 'Das ist ihre Art zu genießen. Das habe ich dir schon vor dreißig Jahren erklärt.');
+    } else if (c === 1) {
+      await say('levi', 'Mit zwölf, erzählt man, saß er im Tempel von Jerusalem – mitten unter den Lehrern. Drei Tage! Alle staunten über seine Antworten. (Lukas 2,46-47)');
+      await say('levi', 'Und jetzt: Johannes hat ihn am Jordan getauft, und seither predigt er durch ganz Galiläa. In Kapernaum reden sie von nichts anderem mehr.');
+      await say('joel', 'Das Kind aus der Krippe... predigt.');
+    } else if (c === 2) {
+      await say('levi', 'Vor ein paar Jahren eingeschlafen. Im Sitzen, am Feuer, mitten in der „Gesamtaufsicht“. Wie es sich gehört.');
+      await say('joel', '...');
+      await say('levi', 'Seine letzten Worte? „Zählt die Herde.“ Wir kamen auf zwanzig. Er hat gelächelt.');
+      await say('joel', 'Vierzig Jahre Nachtschicht. Und die letzte hat sich gelohnt. Er hätte den heutigen Tag geliebt.');
+    } else {
+      await say('levi', 'Ja. Setz dich, setz dich! Da vorne ist noch ein Platz frei.');
+      done = true;
+    }
+  }
+}
+
+async function predigtCutscene() {
+  await wait(600);
+  await say('erzaehler', 'Jesus kam nach Nazaret, wo er aufgewachsen war, und ging nach seiner Gewohnheit am Sabbat in die Synagoge. Er stand auf, um vorzulesen. (Lukas 4,16)');
+  await say('erzaehler', 'Man reichte ihm die Schriftrolle des Propheten Jesaja. Er öffnete sie und fand die Stelle, wo geschrieben steht:');
+  await say('jesus', '„Der Geist des Herrn ruht auf mir; denn er hat mich gesalbt. Er hat mich gesandt, den Armen eine gute Nachricht zu bringen,');
+  await say('jesus', 'den Gefangenen die Entlassung zu verkünden und den Blinden das Augenlicht, die Zerschlagenen in Freiheit zu setzen');
+  await say('jesus', 'und ein Gnadenjahr des Herrn auszurufen.“ (Lukas 4,18-19)');
+  await say('erzaehler', 'Er rollte die Schrift zusammen, gab sie dem Diener und setzte sich. Die Augen aller in der Synagoge waren auf ihn gerichtet. (Lukas 4,20)');
+  await wait(800);
+  await say('jesus', 'Heute hat sich dieses Schriftwort, das ihr eben gehört habt, erfüllt. (Lukas 4,21)');
+  await say('menge', 'Ist das nicht der Sohn Josefs? (Lukas 4,22)');
+  await say('levi', 'Joel... er ist es. Das Kind aus der Krippe.');
+  await say('joel', 'Ich weiß, Levi. „Euch ist heute der Retter geboren“, hat der Engel gesagt.');
+  await say('joel', 'Damals hat es der Engel verkündet. Heute sagt er es selbst.');
+  await say('erzaehler', 'Nazaret aber tat sich schwer mit dem Sohn des Zimmermanns – voll Zorn trieben sie ihn zur Stadt hinaus. Doch er schritt mitten durch sie hindurch und ging weiter. (Lukas 4,28-30)');
+  await say('erzaehler', 'Er ging hinab nach Kapernaum am See – und verkündete das Reich Gottes. (Lukas 4,31)');
+  await say('joel', 'Komm, Levi. Einer Verheißung läuft man entgegen – das hat uns mal ein weiser Mann beigebracht.');
+  await say('levi', 'Nach Kapernaum? Joel, das sind STUNDEN zu Fuß!');
+  await say('joel', 'Dann reden wir unterwegs. Du hast ja dreißig Jahre nachzuholen.');
+  await animate(1800, p => { fx.fade = p; });
+  await chapterSix();
+}
+
+/* ============================================================
+   KAPITEL 6: MENSCHENFISCHER (Lukas 5,1-11)
+   ============================================================ */
+
+async function chapterSix() {
+  state.room = 'see';
+  player.x = 900; player.y = 508;
+  player.tx = player.x; player.ty = player.y;
+  player.walking = false; player.facing = -1;
+  fx.boot = 0; fx.boot2 = 0;
+  await animate(1200, p => { fx.fade = 1 - p; });
+  await say('erzaehler', 'KAPITEL 6: MENSCHENFISCHER');
+  await say('erzaehler', 'Die Kunde von Jesus verbreitete sich in der ganzen Gegend. (Lukas 4,37) Und so kamen auch zwei alte Hirten an den See Gennesaret.');
+  await walkPlayerTo(740, 508);
+  await say('levi', 'Der See Gennesaret! Joel, weißt du, dass ich noch NIE am See war?');
+  await say('joel', 'Du warst auch noch nie pünktlich. Heute holst du beides nach... Schau dir die Menge da drüben an. Halb Kapernaum steht am Ufer.');
+  await say('levi', 'Und mittendrin – das ist ER! Aber die Fischer da bei den Netzen schauen ziemlich... durchwacht aus.');
+  await say('joel', '(Der Fischer bei den Netzen sieht aus, als hätte er eine lange Nacht hinter sich. Reden wir mit ihm.)');
+}
+
+async function talkSimon() {
+  if (F.bootAngefragt && !F.bootDraussen) {
+    await say('simon', 'Worauf wartest du, Hirte? Das Boot! Pack mit an!');
+    return;
+  }
+  if (!F.simonMet) {
+    F.simonMet = true;
+    await say('simon', 'Wenn du Fische kaufen willst, Hirte: Es gibt KEINE. Nicht eine einzige Flosse.');
+    await say('joel', 'So schlimm?');
+    await say('simon', 'Die ganze Nacht draußen. Die Netze wieder und wieder ausgeworfen. NICHTS. Ich bin Simon, und das hier ist der schlechteste Morgen meines Berufslebens.');
+  }
+  let done = false;
+  while (!done) {
+    const c = await choose([
+      'Eine ganze Nacht für nichts – das kenne ich.',
+      'Wer ist der Mann da drüben bei der Menge?',
+      'Kann ich irgendwie helfen?',
+      'Ich lasse dich in Ruhe arbeiten.',
+    ]);
+    if (c === 0) {
+      await say('joel', 'Ich habe einmal eine ganze Nacht lang ein einziges Lamm gesucht. Zwischen Felsen, im Dunkeln, bei Bethlehem.');
+      await say('simon', 'Und? Gefunden?');
+      await say('joel', 'Gefunden. Es wurde die beste Nacht meines Lebens – aber das ist eine lange Geschichte.');
+      await say('simon', 'Hmpf. Fische sind keine Lämmer. Fische BLÖKEN wenigstens nicht, wenn man sie endlich hat.');
+    } else if (c === 1) {
+      await say('simon', 'Jesus von Nazaret. Er war in meinem Haus – meine Schwiegermutter lag mit hohem Fieber, und er hat sie geheilt. Einfach so. (Lukas 4,38-39)');
+      await say('simon', 'Seitdem läuft ihm halb Kapernaum nach. Die andere Hälfte steht da drüben am Ufer.');
+      await say('joel', '(Er redet rau über seine Nacht – aber über DIESEN Mann redet er ganz anders.)');
+    } else if (c === 2) {
+      await say('simon', 'Helfen? Ein HIRTE?');
+      await say('simon', '...Na schön. Die Netze müssen gewaschen werden, sonst faulen sie. Wenn du wirklich anpacken willst: nur zu. Sie liegen gleich da.');
+      await say('joel', 'Ein Hirte packt an. Das war schon immer so.');
+    } else {
+      await say('simon', 'Ruhe wäre schön. Aber bei DER Menge da drüben wird das nichts.');
+      done = true;
+    }
+  }
+}
+
+async function netzeWaschen() {
+  await say('joel', 'Ich knie mich ans Wasser und schrubbe die Netze... Algen, Schlamm, ein einsamer, sehr toter Krebs.');
+  await wait(600);
+  await say('simon', 'Nicht schlecht für einen Hirten. Du machst das nicht zum ersten Mal.');
+  await say('joel', 'Vierzig Jahre Wolle waschen. Netze sind dagegen ein Vergnügen – sie treten einen wenigstens nicht.');
+  F.netzeSauber = true;
+  await say('erzaehler', 'Die Menge aber drängte sich um Jesus und wollte das Wort Gottes hören, während er am See Gennesaret stand. (Lukas 5,1)');
+  await wait(500);
+  await say('joel', '(Die Menge schiebt ihn ja fast ins Wasser... Und jetzt kommt er hierher, zu den Booten.)');
+  await say('jesus', 'Simon – fährst du mich ein Stück vom Land weg? Vom Boot aus können mich alle hören.');
+  await say('simon', 'Vom Land wegfahren... Nach DER Nacht? ...Meinetwegen. Für dich.');
+  await say('simon', 'Aber das Boot liegt fest im Sand, und meine Arme sind leer gefischt. Hirte – packst du noch einmal mit an?');
+  F.bootAngefragt = true;
+  await say('joel', '(Das Boot anschieben also. Levi zählt sicher wieder nur die Möwen.)');
+}
+
+async function bootUndFang() {
+  await say('joel', 'Alle zusammen! Und... HO!');
+  await say('levi', 'Ich übernehme die Gesamtaufsicht!');
+  await say('joel', 'SCHIEB, Levi.');
+  F.bootDraussen = true;
+  await animate(4000, p => { fx.boot = p; });
+  await say('erzaehler', 'Jesus stieg in das Boot, das Simon gehörte, und bat ihn, ein Stück vom Land wegzufahren. Dann setzte er sich und lehrte die Menge vom Boot aus. (Lukas 5,3)');
+  await wait(800);
+  await say('joel', '(Selbst das Wasser ist still geworden. Tausend Menschen am Ufer – und man hört nur ihn.)');
+  await say('erzaehler', 'Als er aufgehört hatte zu reden, sagte er zu Simon:');
+  await say('jesus', 'Fahr hinaus, wo es tief ist, und werft eure Netze zum Fang aus! (Lukas 5,4)');
+  await say('simon', 'Meister, wir haben die ganze Nacht gearbeitet und nichts gefangen. Doch auf dein Wort hin werde ich die Netze auswerfen. (Lukas 5,5)');
+  await animate(3000, p => { fx.boot = 1 + p * 0.5; });
+  await wait(600);
+  await say('erzaehler', 'Das taten sie – und sie fingen eine so große Menge Fische, dass ihre Netze zu reißen drohten. (Lukas 5,6)');
+  F.fangDone = true;
+  await say('levi', 'JOEL! Das Wasser KOCHT! Sag mir, dass du das auch siehst!');
+  await say('joel', 'Ich sehe es, Levi. Ich sehe es.');
+  await say('erzaehler', 'Sie winkten ihren Gefährten im anderen Boot, zu kommen und mit anzupacken. Und sie füllten beide Boote, bis sie fast versanken. (Lukas 5,7)');
+  await animate(3000, p => { fx.boot2 = p; });
+  await say('erzaehler', 'Als Simon Petrus das sah, fiel er Jesus zu Füßen: (Lukas 5,8)');
+  await say('simon', 'Herr, geh weg von mir; denn ich bin ein sündiger Mensch!');
+  await say('erzaehler', 'Denn Schrecken hatte ihn erfasst über den Fang – ihn und alle bei ihm, auch Jakobus und Johannes, die Söhne des Zebedäus. (Lukas 5,9-10)');
+  await say('jesus', 'Fürchte dich nicht! Von nun an wirst du Menschen fangen. (Lukas 5,10)');
+  await wait(900);
+  await say('joel', '„Fürchte dich nicht.“ ...Levi. LEVI!');
+  await say('levi', 'Was denn?');
+  await say('joel', 'GENAU SO hat der Engel angefangen. Damals, auf dem Feld. „Fürchtet euch nicht!“ – Wort für Wort.');
+  await say('levi', 'Bei uns fing es mit Schafen an. Bei ihm fängt es mit Fischen an. Er sammelt offenbar Leute mit ehrlichen Berufen.');
+  await say('erzaehler', 'Und sie zogen die Boote an Land, ließen alles zurück und folgten ihm. (Lukas 5,11)');
+  await wait(700);
+  await say('joel', 'Alles zurücklassen und ihm folgen... Vierzig Jahre bin ich Herden vorangegangen, Levi.');
+  await say('joel', 'Vielleicht ist es Zeit, einmal hinterherzugehen.');
   F.ended = true;
   await animate(1800, p => { fx.fade = p; });
   document.getElementById('ending').classList.remove('hidden');
@@ -508,6 +906,70 @@ async function warnFamily() {
 /* ============================================================
    DIALOGE
    ============================================================ */
+
+async function talkSchimonTag() {
+  await say('joel', 'Schimon?');
+  await say('schimon', 'Wenn du Zeit zum Reden hast, hast du Zeit zum Arbeiten.');
+  let done = false;
+  while (!done) {
+    const c = await choose([
+      'Was ist noch zu tun?',
+      'Warum schlafen wir eigentlich draußen bei der Herde?',
+      'Erzähl mir was von früher.',
+      'Schon gut, ich geh ja schon.',
+    ]);
+    if (c === 0) {
+      if (!F.traenkeVoll && !F.floeteGiven) await say('schimon', 'Die Tränke füllen! Der Bach ist da drüben, ein Eimer steht bei der Feuerstelle. Und beruhige Levi, der jammert mir die Ohren voll.');
+      else if (!F.traenkeVoll) await say('schimon', 'Die Tränke, Junge! Zwanzig durstige Schafe warten nicht ewig.');
+      else if (!F.floeteGiven) await say('schimon', 'Die Herde ist versorgt. Bleibt nur noch Levis Gejammer. Find diese Flöte, bevor ich sie suchen muss.');
+      else await say('schimon', 'Nichts mehr. Gleich wird durchgezählt.');
+    } else if (c === 1) {
+      await say('schimon', 'Volkszählung, Junge. Bethlehem platzt aus allen Nähten – jedes Bett ist dreifach belegt.');
+      await say('schimon', 'Außerdem: Die Lämmer für den Tempel brauchen uns Tag UND Nacht. Und Schafe zahlen keine Miete.');
+    } else if (c === 2) {
+      await say('schimon', 'Wusstest du, dass König David genau hier Schafe gehütet hat?');
+      await say('joel', 'Ja, Schimon. Du erzählst es jedem. Jeden Tag.');
+      await say('schimon', 'Und heute Abend erzähle ich es WIEDER. Vorfreude ist auch ein Geschenk.');
+    } else {
+      await say('schimon', 'Braver Junge. Die Sonne wartet nicht.');
+      done = true;
+    }
+  }
+}
+
+async function talkLeviTag() {
+  if (F.floeteGiven) {
+    await say('levi', '♪ Fidel-di-düü... düdel... QUIIIETSCH ♪');
+    await say('joel', 'Wunderbar, Levi. Die Herde rückt schon ganz eng zusammen.');
+    await say('levi', 'Aus BEGEISTERUNG, Joel. Aus Begeisterung.');
+    return;
+  }
+  await say('levi', 'Joel! Meine Flöte! Sie ist WEG! Einfach weg!');
+  let done = false;
+  while (!done) {
+    const c = await choose([
+      'Wo hast du sie zuletzt gehabt?',
+      'Wozu brauchst du überhaupt eine Flöte?',
+      'Vielleicht hat sie ein Schaf gefressen.',
+      'Ich halte die Augen offen.',
+    ]);
+    if (c === 0) {
+      await say('levi', 'Drüben bei den Felsen! Ich habe nur KURZ nach einem Adler geschaut, und zack – weg war sie.');
+      await say('joel', 'Bei den Felsen also. Dann schaue ich da mal genauer hin.');
+    } else if (c === 1) {
+      await say('levi', 'Die Schafe LIEBEN meine Musik! Sie beruhigt die Herde!');
+      await say('joel', 'Die Schafe stellen sich taub, Levi.');
+      await say('levi', 'Das ist ihre Art zu genießen.');
+    } else if (c === 2) {
+      await say('levi', 'WAS?! Meinst du... welches denn? Das mit dem frechen Blick?');
+      await say('joel', 'Levi. Das war ein Scherz. Schafe fressen keine Flöten.');
+      await say('levi', 'Sag das nicht. Die sind zu allem fähig, wenn keiner hinschaut.');
+    } else {
+      await say('levi', 'Danke, Joel! Ohne Flöte überstehe ich die Nachtwache NICHT.');
+      done = true;
+    }
+  }
+}
 
 async function talkSchimon() {
   if (!F.fireLit) {
@@ -711,11 +1173,279 @@ async function talkJosef() {
   }
 }
 
+async function talkRahel() {
+  if (F.toldRahel) {
+    await say('rahel', 'Ein Engel! Bei HIRTEN! Das erzähle ich heute noch meiner Schwester. Und ihrer Schwägerin. Und dem ganzen Brunnenviertel.');
+    await say('joel', '(Die Nachricht ist bei ihr in guten, sehr schnellen Händen.)');
+    return;
+  }
+  await say('rahel', 'Ich bin Rahel. Josef und Maria wohnen gleich da oben – aber aus den beiden bekommt man ja kein Wort heraus über damals!');
+  await say('rahel', 'Du warst DABEI, in jener Nacht. Also raus damit: Was hat der Engel zu euch gesagt?');
+  const c = await choose([
+    '„Schöne Nacht heute, werte Hirten.“',
+    '„Fürchtet euch nicht! Euch ist heute der Retter geboren – Christus, der Herr.“',
+    '„Folgt dem Stern bis zur nächsten freien Herberge.“',
+  ]);
+  if (c === 1) {
+    await say('rahel', 'Der Retter... Christus, der Herr. Und das sagt er HIRTEN. Nicht dem Hohen Rat, nicht dem Kaiser – Hirten!');
+    await say('joel', 'Glaub mir, das hat uns auch gewundert. Levi hat geschrien wie ein Lamm im Dornbusch.');
+  } else {
+    await say('joel', 'Moment... nein. So fängt höchstens Levi ein Gespräch an. Der Engel sagte: „Fürchtet euch nicht! Euch ist heute der Retter geboren – Christus, der Herr.“ (Lukas 2,10-11)');
+    await say('rahel', 'DAS klingt schon eher nach einem Engel.');
+  }
+  await say('rahel', 'Und Maria hat all das gewusst, schon vorher... Sie bewahrt diese Dinge in ihrem Herzen, sagt sie immer.');
+  F.toldRahel = true;
+  await checkHeimkehr();
+}
+
+async function talkEli() {
+  if (F.toldEli) {
+    await say('eli', 'Eine Krippe. Hm. Ich denke immer noch darüber nach, Hirte.');
+    return;
+  }
+  await say('eli', 'Eli. Ich pflüge das Feld da drüben. Und ich glaube grundsätzlich NICHTS, was am Brunnen erzählt wird.');
+  await say('eli', 'Ein neugeborener KÖNIG, heißt es. Schön. Und wo lag er? In einem Palast, nehme ich an? Auf Purpur und Seide?');
+  const c = await choose([
+    'Im Obergemach der größten Herberge Bethlehems.',
+    'Auf einem Thron aus Gold, was sonst.',
+    'In einer Futterkrippe, in Windeln gewickelt.',
+  ]);
+  if (c === 2) {
+    await say('eli', 'Eine KRIPPE?! ...');
+    await say('eli', 'Hm. Ausgerechnet eine Krippe. Weißt du, Hirte – SO fängt kein Schwindel an. Schwindler erfinden Paläste.');
+    await say('joel', 'Das Zeichen des Engels war genau das: Ihr werdet ein Kind finden, in Windeln gewickelt und in einer Krippe liegend. (Lukas 2,12)');
+  } else {
+    await say('eli', 'HA! Siehst du! Geschwätz, wie ich...');
+    await say('joel', 'Nein, warte. Es war eine FUTTERKRIPPE, in einem Stall am Hang. Ich stand selbst davor. In der Herberge war kein Platz. (Lukas 2,7)');
+    await say('eli', 'Eine Krippe... Hm. Ausgerechnet. So fängt kein Schwindel an. Schwindler erfinden Paläste.');
+  }
+  await say('eli', 'Ich sage nicht, dass ich es glaube. Ich sage nur... ich denke darüber nach. Beim Pflügen denkt man viel.');
+  F.toldEli = true;
+  await checkHeimkehr();
+}
+
+async function talkMirjam() {
+  if (F.toldMirjam) {
+    await say('mirjam', '♪ EHRE SEI GOTT IN DER HÖÖÖHE ♪');
+    await say('joel', '(Sie übt seit Stunden. Die Schafe haben sich ans andere Ende der Weide verzogen.)');
+    return;
+  }
+  await say('mirjam', 'Ich bin Mirjam! Stimmt es, dass du die Engel gehört hast? RICHTIGE Engel? Ganz viele?');
+  await say('joel', 'Eine ganze himmlische Heerschar. Der Himmel war voll von ihnen.');
+  await say('mirjam', 'Und was haben sie GESUNGEN? Sag es genau! GANZ genau!');
+  const c = await choose([
+    '„Ehre sei Gott in der Höhe und Friede auf Erden bei den Menschen seines Wohlgefallens!“',
+    'Ein Hirtenlied über zwanzig Schafe.',
+    'Gesungen? Sie haben eher... gebrummt.',
+  ]);
+  if (c === 0) {
+    await say('mirjam', '♪ Ehre sei Gott in der Höhe... ♪ – so ungefähr?');
+    await say('joel', 'So ungefähr. Nur... größer. Als würde der Himmel selbst singen.');
+  } else {
+    await say('mirjam', 'Das glaube ich dir NICHT. Engel brummen nicht!');
+    await say('joel', 'Erwischt. Sie sangen: „Ehre sei Gott in der Höhe und Friede auf Erden bei den Menschen seines Wohlgefallens!“ (Lukas 2,14)');
+    await say('mirjam', 'DAS ist schöner. Das übe ich!');
+  }
+  await say('mirjam', 'Wenn ich groß bin, will ich auch mal einen Engel sehen. Oder wenigstens ein Schaf, das spricht.');
+  await say('joel', 'Bleib bei den Engeln. Schafe sagen immer nur dasselbe.');
+  F.toldMirjam = true;
+  await checkHeimkehr();
+}
+
+async function talkMariaReise() {
+  if (F.abendDone) {
+    await say('maria', 'Schlaf gut, Joel. Und grüße mir Bethlehem.');
+    return;
+  }
+  await say('maria', 'Er hat die ganze Wüste verschlafen. Sechs Tage Sand und Sonne – und er träumt einfach.');
+  let done = false;
+  while (!done) {
+    const c = await choose([
+      'Wie geht es dem Kind?',
+      'Hast du Angst? Ägypten ist die Fremde.',
+      'Was kann ich noch tun?',
+      'Ich lasse euch ausruhen.',
+    ]);
+    if (c === 0) {
+      await say('maria', 'Gut. Er ist ein geduldiger Reisender – geduldiger als der Esel jedenfalls.');
+      await say('esel', 'Iaah!');
+      await say('maria', 'Er hat es gehört.');
+    } else if (c === 1) {
+      await say('maria', 'Angst? Ein wenig. Aber unser Volk war schon einmal in Ägypten – und Gott hat es heimgeführt.');
+      await say('maria', 'Wenn alles vorbei ist, führt er auch uns wieder heim. Da bin ich ganz sicher.');
+    } else if (c === 2) {
+      if (!F.eselWasser && !F.dattelnGiven) await say('maria', 'Der Esel braucht Wasser, und Josef wünscht sich Datteln von der Palme. Mehr brauchen wir heute nicht.');
+      else if (!F.eselWasser) await say('maria', 'Nur noch der Esel. Er schaut schon ganz sehnsüchtig zur Quelle.');
+      else if (!F.dattelnGiven) await say('maria', 'Die Datteln an der Palme – mit deinem Hirtenstab kommst du bestimmt heran.');
+      else await say('maria', 'Nichts mehr. Setz dich gleich zu uns ans Feuer.');
+    } else {
+      await say('maria', 'Du störst nicht, Joel. Aber ruh dich auch selbst aus.');
+      done = true;
+    }
+  }
+}
+
+async function talkJosefReise() {
+  if (F.abendDone) {
+    await say('josef', 'Danke für alles, Joel. Ohne dich stünden wir noch in Bethlehem vor einem Soldaten.');
+    return;
+  }
+  const c = await choose([
+    'Wie lange bleibt ihr in Ägypten?',
+    'Woher weißt du so viel über die Pyramiden?',
+    'Ich kümmere mich ums Lager.',
+  ]);
+  if (c === 0) {
+    await say('josef', 'Bis der Engel wieder spricht. Er sagte: Bleib dort, bis ich es dir sage. (Matthäus 2,13)');
+    await say('josef', 'Ein Zimmermann findet überall Arbeit. Und in Ägypten leben viele aus unserem Volk – seit Alters her.');
+  } else if (c === 1) {
+    await say('josef', 'Karawanenleute erzählen gern – und ein Zimmermann hört gern zu, wenn es um große Bauwerke geht.');
+    await say('josef', 'Auch wenn ich sagen muss: KEIN einziger Balken ist da verbaut. Reine Steinmetzerei.');
+    await say('joel', 'Skandalös.');
+  } else {
+    await say('josef', 'Danke, Joel. Wasser für den Esel, Datteln für den Weg – dann ist der Abend unser.');
+  }
+}
+
 /* ============================================================
    RÄUME & HOTSPOTS
    ============================================================ */
 
 const rooms = {
+  feldtag: {
+    hotspots: [
+      {
+        id: 'traenke', name: 'Tränke', rect: [484, 478, 88, 30], walk: [528, 520],
+        look: async () => {
+          if (F.traenkeVoll) await say('joel', 'Die Tränke ist voll. Die Schafe drängeln sich schon davor wie Marktweiber am Brotstand.');
+          else await say('joel', 'Die Holztränke der Herde. Staubtrocken. Da drin könnte man Mehl lagern.');
+        },
+        use: async () => {
+          if (F.traenkeVoll) await say('joel', 'Voller geht nicht.');
+          else await say('joel', 'Ohne Wasser bleibt das eine sehr leere Geste. Ich brauche einen Eimer.');
+        },
+        useItem: async it => {
+          if (it === 'eimer') {
+            if (!F.eimerVoll) await say('joel', 'Der Eimer ist leer. Ich sollte ihn erst am Bach füllen.');
+            else if (F.traenkeVoll) await say('joel', 'Voller geht nicht.');
+            else {
+              F.eimerVoll = false;
+              F.traenkeVoll = true;
+              F.tookEimer = false;
+              removeItem('eimer');
+              await say('joel', 'Ich gieße das Wasser in die Tränke... und noch ein Eimer... und noch einer...');
+              await say('schaf', 'Mäh! Mäh!');
+              await say('joel', 'Ein paar Eimer später: Die Tränke ist voll, und ich bin der Held der Herde. Den Eimer stelle ich zurück.');
+              await checkAbendrot();
+            }
+          } else await say('joel', 'Das gehört nicht in die Tränke.');
+        },
+      },
+      {
+        id: 'bach', name: 'Bach', rect: [0, 460, 135, 80], walk: [150, 510],
+        look: async () => { await say('joel', 'Ein schmaler Bach, kühl von den Hügeln. Das Beste an dieser Weide – sagen die Schafe. Vermutlich.'); },
+        use: async () => { await say('joel', 'Ich trinke einen Schluck. Ahh. Besser als jeder Wein. Sage ich, der noch nie Wein hatte.'); },
+        useItem: async it => {
+          if (it === 'eimer') {
+            if (F.eimerVoll) await say('joel', 'Der Eimer ist schon voll.');
+            else { F.eimerVoll = true; await say('joel', 'Ich halte den Eimer in den Bach... blubb, blubb... voll!'); }
+          } else await say('joel', 'Das will ich nicht nass machen.');
+        },
+      },
+      {
+        id: 'eimer_hs', name: 'Eimer', rect: [312, 454, 36, 32], walk: [352, 508],
+        visible: () => !F.tookEimer,
+        look: async () => { await say('joel', 'Unser Holzeimer steht bei der Feuerstelle. Treuer Geselle für alles, was schwappt.'); },
+        take: async () => {
+          F.tookEimer = true;
+          addItem('eimer');
+          await say('joel', 'Den Eimer nehme ich. Leer wiegt er ja fast nichts.');
+        },
+      },
+      {
+        id: 'feuerstelle_tag', name: 'Feuerstelle', rect: [352, 460, 62, 32], walk: [400, 510],
+        look: async () => { await say('joel', 'Die Feuerstelle für die Nacht. Noch kalt. Heute Abend sitzt Schimon wieder davor und „überwacht“.'); },
+        use: async () => { await say('joel', 'Noch ist es hell genug. Feuer kommt später – die Nacht ist lang genug dafür.'); },
+      },
+      {
+        id: 'floete_felsen', name: 'Etwas zwischen den Felsen', rect: [816, 458, 36, 22], walk: [768, 505],
+        visible: () => !F.tookFloete,
+        look: async () => { await say('joel', 'Zwischen den Felsen klemmt etwas Dünnes, Helles... Moment. Das ist ja Levis Flöte!'); },
+        take: async () => {
+          F.tookFloete = true;
+          addItem('floete');
+          await say('joel', 'Ich zwänge den Arm in den Spalt... etwas tiefer... HAB sie!');
+          await say('joel', '(Der Spalt ist tückisch tief. Wehe, da gerät mal ein Lamm hinein – das kriegt man mit bloßen Händen NIE wieder raus.)');
+        },
+      },
+      {
+        id: 'felsen_tag', name: 'Felsen', rect: [778, 438, 116, 74], walk: [768, 505],
+        look: async () => {
+          if (F.tookFloete) await say('joel', 'Große Felsbrocken mit einem tiefen Spalt dazwischen. Da fällt gern mal etwas hinein.');
+          else await say('joel', 'Große Felsbrocken. Levi hat hier nach seinem Adler gestarrt... vielleicht liegt die Flöte noch da.');
+        },
+        take: async () => { await say('joel', 'Zu schwer. Und mein Felsensammelalbum ist immer noch voll.'); },
+      },
+      {
+        id: 'schimon_tag', name: 'Schimon', rect: [272, 384, 46, 106], walk: [338, 505],
+        look: async () => { await say('joel', 'Schimon mustert die Herde wie ein Feldherr seine Truppen. Die Truppen kauen Gras.'); },
+        talk: talkSchimonTag,
+      },
+      {
+        id: 'levi_tag', name: 'Levi', rect: [444, 396, 48, 88], walk: [428, 502],
+        look: async () => { await say('joel', 'Levi sucht zum zwölften Mal in denselben drei Grasbüscheln nach seiner Flöte.'); },
+        talk: talkLeviTag,
+        giveItem: async it => {
+          if (it === 'floete') {
+            removeItem('floete');
+            F.floeteGiven = true;
+            await say('joel', 'Sieh mal, was zwischen den Felsen geklemmt hat.');
+            await say('levi', 'MEINE FLÖTE! Joel! Du bist der beste Hirte ALLER Zeiten!');
+            await say('levi', 'Ich spiele dir was! ♪ Fidel-di-düü... QUIIIETSCH ♪');
+            await say('schaf', 'Määh...');
+            await say('joel', '(Sogar die Schafe haben eine Meinung dazu.)');
+            await checkAbendrot();
+          } else await say('levi', 'Danke, aber... behalte das mal lieber.');
+        },
+      },
+      {
+        id: 'schafe_tag', name: 'Schafe', rect: [556, 436, 180, 90], walk: [600, 520],
+        look: async () => {
+          if (F.traenkeVoll) await say('joel', 'Zwanzig Schafe, frisch getränkt und bestens gelaunt. So gut sieht die Herde selten aus.');
+          else await say('joel', 'Zwanzig Schafe. Sie starren abwechselnd mich und die leere Tränke an. Sehr subtil.');
+        },
+        talk: async () => {
+          await say('schaf', F.traenkeVoll ? 'Mäh!' : 'Määäh...');
+          await say('joel', F.traenkeVoll ? 'Gern geschehen.' : 'Ja, ja. Das Wasser kommt ja schon.');
+        },
+        take: async () => { await say('joel', 'Ein ganzes Schaf passt nicht in meine Tasche. Glaub mir, ich habe es als Kind versucht.'); },
+      },
+      {
+        id: 'baum_tag', name: 'Olivenbaum', rect: [56, 296, 130, 150], walk: [152, 498],
+        look: async () => { await say('joel', 'Unser alter Olivenbaum. Der einzige Schatten weit und breit – und damit der beliebteste Ort der ganzen Weide.'); },
+        take: async () => { await say('joel', 'Er hat Wurzeln. Tiefe. Das ist quasi sein ganzes Konzept.'); },
+      },
+      {
+        id: 'schild_tag', name: 'Schild', rect: [840, 408, 64, 52], walk: [870, 495],
+        look: async () => { await say('joel', '„Bethlehem – Stadt Davids. Brotsorten: 12. Einwohner: zu viele wegen der Volkszählung.“'); },
+      },
+      {
+        id: 'weg_tag', name: 'Weg nach Bethlehem', rect: [896, 416, 64, 116], walk: [900, 472],
+        goto: async () => { await say('joel', 'In die Stadt? Jetzt? Die Herde lässt man nicht allein – und Schimon mich erst recht nicht.'); },
+        look: async () => { await say('joel', 'Der Weg führt hinüber nach Bethlehem. Heute war den ganzen Tag Gedränge darauf – die Volkszählung treibt alle in die Stadt.'); },
+      },
+      {
+        id: 'sonne_tag', name: 'Sonne', rect: [115, 60, 95, 95], noWalk: true,
+        look: async () => { await say('joel', 'Die Sonne steht schon tief über den Hügeln. Nicht mehr lange, dann beginnt die Nachtwache.'); },
+        take: async () => { await say('joel', 'Träum weiter, Joel.'); },
+      },
+      {
+        id: 'stadt_tag', name: 'Bethlehem', rect: [724, 318, 200, 80], noWalk: true,
+        look: async () => { await say('joel', 'Bethlehem im Abendlicht. Von hier sieht man, wie voll die Gassen sind. Ameisenhaufen sind besser organisiert.'); },
+      },
+    ],
+  },
+
   field: {
     hotspots: [
       {
@@ -849,6 +1579,11 @@ const rooms = {
         look: async () => { await say('joel', 'Bethlehem. Wegen der Volkszählung platzt die Stadt aus allen Nähten.'); },
       },
     ],
+  },
+
+  weg: {
+    // reine Zwischenszene – keine Interaktion
+    hotspots: [],
   },
 
   city: {
@@ -1116,6 +1851,351 @@ const rooms = {
       },
     ],
   },
+
+  aegypten: {
+    hotspots: [
+      {
+        id: 'pyramiden', name: 'Pyramiden', rect: [50, 235, 340, 175], noWalk: true,
+        look: async () => {
+          await say('joel', 'Drei riesige Steinberge, spitz wie Speerspitzen. Josef sagt, da liegen Könige drin.');
+          await say('joel', 'Bei uns bekommen Könige eine Höhle. Oder eine Krippe.');
+        },
+        take: async () => { await say('joel', 'Mein Inventar. Hat. GRENZEN.'); },
+      },
+      {
+        id: 'sonne', name: 'Abendsonne', rect: [455, 345, 55, 50], noWalk: true,
+        visible: () => fx.abend < 0.5,
+        look: async () => { await say('joel', 'Die Sonne sinkt genau hinter die Pyramiden. Als hätte Ägypten das für uns einstudiert.'); },
+      },
+      {
+        id: 'datteln_palme', name: 'Datteln', rect: [336, 334, 36, 30], walk: [420, 510],
+        visible: () => !F.dattelnTaken,
+        look: async () => { await say('joel', 'Ganz oben in der Palme hängt eine schwere Rispe voller Datteln. Natürlich GANZ oben.'); },
+        take: async () => {
+          await say('joel', 'Ich springe... und springe... Nein. Dafür müsste ich drei Joels übereinander sein.');
+          await say('joel', 'Aber wozu hat ein Hirte einen Stab mit Haken dran?');
+        },
+        useItem: async it => {
+          if (it === 'stab') {
+            F.dattelnTaken = true;
+            addItem('datteln');
+            await say('joel', 'Ich hake die Rispe mit dem Hirtenstab herunter... HA! Erst Lämmer, jetzt Datteln. Der Stab kann alles.');
+          } else await say('joel', 'Damit komme ich da oben nicht heran.');
+        },
+      },
+      {
+        id: 'palme', name: 'Palme', rect: [330, 320, 75, 152], walk: [420, 510],
+        look: async () => {
+          if (F.dattelnTaken) await say('joel', 'Eine Dattelpalme. Jetzt ohne Datteln. Tut mir leid, Palme.');
+          else await say('joel', 'Eine hohe Dattelpalme. Die ersten Bäume Ägyptens sehen schon mal vielversprechend aus.');
+        },
+        take: async () => { await say('joel', 'Sie hat Wurzeln. Tiefe. Das kenne ich schon vom Olivenbaum.'); },
+        useItem: async it => {
+          if (it === 'stab' && !F.dattelnTaken) {
+            F.dattelnTaken = true;
+            addItem('datteln');
+            await say('joel', 'Ich hake die Rispe mit dem Hirtenstab herunter... HA! Erst Lämmer, jetzt Datteln. Der Stab kann alles.');
+          } else await say('joel', 'Die Palme bleibt davon unbeeindruckt.');
+        },
+      },
+      {
+        id: 'quelle', name: 'Quelle', rect: [205, 468, 130, 36], walk: [350, 512],
+        look: async () => { await say('joel', 'Eine kleine Quelle zwischen den Steinen – kaum mehr als ein Rinnsal, aber das Wasser ist klar und kühl.'); },
+        use: async () => {
+          await say('joel', 'Ich trinke einen Schluck. Ahh. Sechs Tage Wüste machen aus Wasser ein Festmahl.');
+        },
+        useItem: async it => {
+          if (it === 'schlauch') {
+            if (F.schlauchVoll) await say('joel', 'Voller geht er nicht.');
+            else { F.schlauchVoll = true; await say('joel', 'Ich halte den Schlauch ins Rinnsal... gluck, gluck... voll!'); }
+          } else await say('joel', 'Das will ich nicht nass machen.');
+        },
+      },
+      {
+        id: 'esel_reise', name: 'Esel', rect: [405, 440, 95, 75], walk: [520, 512],
+        look: async () => {
+          if (F.eselWasser) await say('joel', 'Der Esel sieht schon viel besser aus. Er hat mir sogar fast dankbar zugeblinzelt. Fast.');
+          else await say('joel', 'Der treue Esel. Sechs Tagesmärsche stecken ihm in den Knochen – und die Quelle ist zu flach für sein Maul.');
+        },
+        talk: async () => {
+          await say('joel', 'Na, alter Freund? Fast geschafft.');
+          await say('esel', F.eselWasser ? 'Iaah!' : 'Iaah...');
+          await say('joel', F.eselWasser ? 'Ganz meine Meinung.' : 'Ich weiß. Ich arbeite dran.');
+        },
+        useItem: async it => {
+          if (it === 'schlauch') await traenkeEsel();
+          else if (it === 'datteln') await say('joel', 'Die sind für die Familie. Du bekommst Disteln, das ist quasi dasselbe.');
+          else await say('joel', 'Lieber nicht.');
+        },
+        giveItem: async it => {
+          if (it === 'schlauch') await traenkeEsel();
+          else await say('joel', 'Das braucht ein Esel nicht.');
+        },
+        take: async () => { await say('joel', 'Wir hatten das Thema schon. Inventar. Grenzen.'); },
+      },
+      {
+        id: 'gepaeck', name: 'Gepäck', rect: [515, 462, 65, 50], walk: [555, 514],
+        look: async () => {
+          if (F.tookSchlauch) await say('joel', 'Decken, ein Werkzeugbündel – und die Gaben der Weisen, gut versteckt unter Josefs Säge.');
+          else await say('joel', 'Decken, ein Werkzeugbündel... und ein leerer Wasserschlauch hängt am Packsattel.');
+        },
+        take: async () => {
+          if (F.tookSchlauch) { await say('joel', 'Der Rest gehört der Familie.'); return; }
+          F.tookSchlauch = true;
+          addItem('schlauch');
+          await say('joel', 'Den Wasserschlauch nehme ich. Leer wiegt er ja nichts.');
+        },
+        use: async () => { await say('joel', 'Ich wühle nicht im Gepäck anderer Leute. Außer im Notfall. Oder bei Proviant.'); },
+      },
+      {
+        id: 'feuerstelle', name: 'Lagerfeuer', rect: [605, 450, 75, 48], walk: [600, 512],
+        look: async () => {
+          if (F.abendDone) await say('joel', 'Das Feuer knistert leise. Der beste Platz der ganzen Wüste.');
+          else await say('joel', 'Josef hat schon Feuerholz aufgeschichtet. Angezündet wird, wenn das Lager versorgt ist.');
+        },
+        use: async () => {
+          if (F.abendDone) await say('joel', 'Es brennt doch schon.');
+          else await say('joel', 'Erst die Arbeit: Wasser für den Esel, Datteln für die Familie. DANN der gemütliche Teil.');
+        },
+      },
+      {
+        id: 'kind_reise', name: 'Das Kind', rect: [664, 442, 34, 26], walk: [640, 510],
+        look: async () => { await say('joel', 'Er schläft in Marias Armen, fest eingewickelt. Sechs Tage Flucht – und kein bisschen beeindruckt.'); },
+        talk: async () => {
+          await say('joel', '(Schlaf gut, kleiner König. Bis nach Ägypten bist du schon gekommen – weiter als ich je in meinem Leben.)');
+        },
+      },
+      {
+        id: 'maria_reise', name: 'Maria', rect: [678, 410, 50, 82], walk: [645, 510],
+        look: async () => { await say('joel', 'Maria. Müde von der Reise – aber ihre Augen sind so ruhig, als wüsste sie etwas, das die Wüste nicht weiß.'); },
+        talk: talkMariaReise,
+        giveItem: async it => {
+          if (it === 'datteln') {
+            removeItem('datteln');
+            F.dattelnGiven = true;
+            await say('joel', 'Hier – frisch von der Palme. Proviant für die nächsten Tage.');
+            await say('maria', 'Datteln! Danke, Joel. Du bist ein besserer Reisegefährte als jede Karawane.');
+            await checkAbend();
+          } else if (it === 'schlauch') await say('maria', 'Gib das Wasser dem Esel, Joel. Er hat es nötiger als wir.');
+          else await say('maria', 'Danke, aber behalte es nur.');
+        },
+      },
+      {
+        id: 'josef_reise', name: 'Josef', rect: [745, 398, 50, 105], walk: [705, 512],
+        look: async () => { await say('joel', 'Josef richtet das Lager. Ein Mann, der in der Wüste genauso anpackt wie in der Werkstatt.'); },
+        talk: talkJosefReise,
+        giveItem: async it => {
+          if (it === 'datteln') {
+            removeItem('datteln');
+            F.dattelnGiven = true;
+            await say('joel', 'Die Datteln, wie bestellt. Mit dem Hirtenstab gepflückt.');
+            await say('josef', 'Sieh an – das Werkzeug macht den Meister. Danke, Joel.');
+            await checkAbend();
+          } else if (it === 'schlauch') await say('josef', 'Tränk damit zuerst den Esel. Ohne ihn kommen wir keinen Schritt weiter.');
+          else await say('josef', 'Behalte es, Junge.');
+        },
+      },
+      {
+        id: 'weg_zurueck', name: 'Weg zurück nach Norden', rect: [0, 300, 36, 230], walk: [60, 508],
+        goto: async () => {
+          if (F.abendDone) await say('joel', 'Morgen früh. Heute Abend gehöre ich ans Feuer.');
+          else await say('joel', 'Umkehren? Jetzt? Erst wird das Lager versorgt.');
+        },
+        look: async () => { await say('joel', 'Da hinten liegen sechs Tagesmärsche Wüste – und dahinter Bethlehem, Schimon, Levi und zwanzig Schafe.'); },
+      },
+    ],
+  },
+
+  nazaret: {
+    hotspots: [
+      {
+        id: 'rahel', name: 'Rahel', rect: [516, 400, 48, 102], walk: [585, 510],
+        look: async () => { await say('joel', 'Eine Frau mit Wasserkrug und wachem Blick. Sie hat mich schon dreimal gemustert – jetzt MUSS sie einfach fragen.'); },
+        talk: talkRahel,
+      },
+      {
+        id: 'eli', name: 'Eli', rect: [696, 406, 48, 100], walk: [658, 510],
+        look: async () => { await say('joel', 'Ein Bauer mit Hacke und Stirnfalten. Die Sorte Mensch, die erst das Feld prüft und dann das Gerede.'); },
+        talk: talkEli,
+      },
+      {
+        id: 'mirjam', name: 'Mirjam', rect: [260, 440, 40, 70], walk: [320, 510],
+        look: async () => { await say('joel', 'Ein Mädchen aus Nazaret. Sie umkreist meine Herde, als hätte sie noch nie zwanzig Schafe auf einem Haufen gesehen.'); },
+        talk: talkMirjam,
+      },
+      {
+        id: 'josef_nz', name: 'Josef', rect: [816, 402, 48, 102], walk: [778, 510],
+        visible: () => F.josefDa,
+        look: async () => { await say('joel', 'Josef. Grauer geworden, aber unverkennbar. Der Mann, der eine Krippe reparierte und einen König großzieht.'); },
+        talk: async () => { await say('josef', 'Bis heute Abend, Joel. Maria backt schon. Komm hungrig!'); },
+      },
+      {
+        id: 'brunnen_nz', name: 'Brunnen', rect: [440, 398, 88, 88], walk: [420, 510],
+        look: async () => { await say('joel', 'Der Brunnen vor Nazaret. Hier holt die halbe Stadt ihr Wasser – und die ganze Stadt ihre Neuigkeiten.'); },
+        use: async () => { await say('joel', 'Die Herde ist getränkt, und ich auch. Mehr braucht ein Hirte nicht.'); },
+      },
+      {
+        id: 'herde_nz', name: 'Meine Herde', rect: [110, 448, 180, 82], walk: [260, 515],
+        look: async () => { await say('joel', 'Meine eigene Herde. Dreißig Tiere inzwischen. Schimon wäre stolz – und würde trotzdem nachzählen.'); },
+        talk: async () => {
+          await say('schaf', 'Mäh.');
+          await say('joel', 'Nach all den Jahren immer noch dieselben Gespräche.');
+        },
+      },
+      {
+        id: 'baum_nz', name: 'Feigenbaum', rect: [40, 280, 140, 165], walk: [150, 500],
+        look: async () => { await say('joel', 'Ein knorriger Feigenbaum. In Galiläa wächst alles besser – sogar der Schatten ist hier grüner.'); },
+        take: async () => { await say('joel', 'Die Feigen sind noch nicht reif. Und Bäume mitnehmen... wir hatten das Thema.'); },
+      },
+      {
+        id: 'stadt_nz', name: 'Nazaret', rect: [600, 200, 340, 150], noWalk: true,
+        look: async () => { await say('joel', 'Nazaret. Klein, am Hang gebaut, voller Werkstätten. „Kann aus Nazaret etwas Gutes kommen?“, spotten manche. Wir werden sehen.'); },
+      },
+      {
+        id: 'weg_nz', name: 'Weg in die Stadt', rect: [896, 400, 64, 130], walk: [900, 480],
+        goto: async () => {
+          if (F.heimkehrDone) await say('joel', 'Heute Abend. Bei Josef und Maria. Ich bin EINGELADEN.');
+          else await say('joel', 'Erst die Herde, dann die Stadt. Außerdem kommen die Leute ohnehin alle zum Brunnen – samt ihrer Fragen.');
+        },
+        look: async () => { await say('joel', 'Der Weg führt den Hang hinauf nach Nazaret. Gleich am Ortsrand soll die Werkstatt eines Zimmermanns liegen.'); },
+      },
+    ],
+  },
+
+  synagoge: {
+    hotspots: [
+      {
+        id: 'levi_syn', name: 'Levi', rect: [192, 420, 48, 86], walk: [262, 508],
+        look: async () => { await say('joel', 'Levi. Grau, faltig, und das Grinsen ist keinen Tag gealtert.'); },
+        talk: talkLeviSyn,
+      },
+      {
+        id: 'platz', name: 'Freier Platz', rect: [318, 462, 64, 52], walk: [345, 508],
+        goto: async () => { await predigtCutscene(); },
+        use: async () => { await predigtCutscene(); },
+        look: async () => { await say('joel', 'Levi hat mir tatsächlich einen Platz freigehalten. In der ersten Reihe. Natürlich.'); },
+      },
+      {
+        id: 'jesus_syn', name: 'Jesus', rect: [450, 320, 60, 96], walk: [480, 470],
+        look: async () => {
+          await say('joel', 'Da steht er, mit der Schriftrolle in der Hand. Ruhig, als hätte er auf diesen Tag gewartet.');
+          await say('joel', '(Dreißig Jahre. Aus dem Kind in der Krippe ist ein Mann geworden.)');
+        },
+        talk: async () => { await say('joel', '(Gleich beginnt die Lesung. Ich setze mich besser – da vorne ist noch ein Platz frei.)'); },
+      },
+      {
+        id: 'bima', name: 'Lesepult', rect: [400, 380, 160, 36], noWalk: true,
+        look: async () => { await say('joel', 'Das Lesepult der Synagoge. Darauf liegt die Schriftrolle des Propheten Jesaja, bereit zur Lesung.'); },
+      },
+      {
+        id: 'menge_syn', name: 'Versammlung', rect: [580, 430, 280, 90], walk: [560, 510],
+        look: async () => { await say('joel', 'Die halbe Stadt drängt sich auf den Bänken. Handwerker, Bauern, Kinder. Alle wollen Josefs Sohn hören.'); },
+        talk: async () => {
+          await say('menge', 'Psst! Es geht gleich los!');
+          await say('joel', '(Schon gut, schon gut.)');
+        },
+      },
+      {
+        id: 'fenster_syn', name: 'Fenster', rect: [700, 80, 120, 110], noWalk: true,
+        look: async () => { await say('joel', 'Durch das hohe Fenster fällt das Morgenlicht quer durch den Raum. Es landet genau auf dem Lesepult. Zufall, bestimmt.'); },
+      },
+      {
+        id: 'lampe_syn', name: 'Öllampe', rect: [120, 110, 60, 90], noWalk: true,
+        look: async () => { await say('joel', 'Ein siebenarmiger Leuchter aus Bronze. Er brennt auch am Tag – manche Lichter löscht man nicht.'); },
+      },
+      {
+        id: 'ausgang_syn', name: 'Ausgang', rect: [0, 200, 50, 330], walk: [70, 505],
+        goto: async () => { await say('joel', 'Jetzt gehen? Levi würde mir das NIE verzeihen. Und ich mir auch nicht.'); },
+        look: async () => { await say('joel', 'Draußen liegt der Sabbatmorgen über Nazaret. Drinnen liegt etwas in der Luft, das größer ist als diese Stadt.'); },
+      },
+    ],
+  },
+
+  see: {
+    hotspots: [
+      {
+        id: 'simon', name: 'Simon', rect: [496, 398, 48, 107], walk: [565, 510],
+        visible: () => !F.bootDraussen,
+        look: async () => { await say('joel', 'Ein Fischer mit Salzrändern auf dem Gewand und Ringen unter den Augen. Die Nacht war lang – und der Fang offenbar kurz.'); },
+        talk: talkSimon,
+      },
+      {
+        id: 'netze', name: 'Netze', rect: [438, 452, 105, 45], walk: [470, 514],
+        look: async () => {
+          if (F.netzeSauber) await say('joel', 'Die Netze sind sauber und hängen zum Trocknen. Bereit für die nächste Nacht – oder für etwas ganz anderes.');
+          else await say('joel', 'Leere Fischernetze, voller Algen und Schlamm. Die Fischer sind ausgestiegen und waschen sie. (Lukas 5,2)');
+        },
+        use: async () => {
+          if (F.netzeSauber) { await say('joel', 'Sauberer werden sie nicht.'); return; }
+          if (!F.simonMet) { await say('joel', 'Fremde Netze fasst man nicht ungefragt an. Erst reden – das gilt bei Herden wie bei Booten.'); return; }
+          await netzeWaschen();
+        },
+        take: async () => { await say('joel', 'Ein Hirte mit Fischernetz. Levi würde sich totlachen.'); },
+      },
+      {
+        id: 'boot', name: 'Simons Boot', rect: [566, 396, 150, 62], walk: [640, 512],
+        visible: () => !F.bootDraussen,
+        look: async () => { await say('joel', 'Ein gutes, breites Fischerboot. Schwer, geduldig und gründlich nach Fisch riechend. Es liegt fest im Sand.'); },
+        goto: async () => {
+          if (F.bootAngefragt) { await bootUndFang(); }
+          else await say('joel', 'Ich schiebe keine fremden Boote ins Wasser. Jedenfalls nicht ungefragt.');
+        },
+        use: async () => {
+          if (F.bootAngefragt) { await bootUndFang(); }
+          else await say('joel', 'Es liegt fest im Sand – und es gehört dem müden Fischer da drüben. Erst fragen.');
+        },
+      },
+      {
+        id: 'boot2', name: 'Zweites Boot', rect: [100, 346, 124, 44], walk: [185, 500],
+        visible: () => !F.fangDone,
+        look: async () => { await say('joel', 'Das zweite Boot gehört Simons Gefährten – Jakobus und Johannes, den Söhnen des Zebedäus. (Lukas 5,10)'); },
+      },
+      {
+        id: 'jesus_see', name: 'Jesus', rect: [232, 398, 46, 102], walk: [305, 508],
+        visible: () => !F.bootDraussen,
+        look: async () => {
+          await say('joel', 'Er steht am Wasser, und die Menge drängt sich um ihn, um das Wort Gottes zu hören. (Lukas 5,1)');
+          await say('joel', '(Gleich schieben sie ihn noch in den See. So kann doch keiner zuhören.)');
+        },
+        talk: async () => { await say('joel', '(Da komme ich nie durch. Die Menge steht dichter als meine Herde beim Gewitter.)'); },
+      },
+      {
+        id: 'menge_see', name: 'Menschenmenge', rect: [108, 418, 175, 96], walk: [330, 512],
+        look: async () => { await say('joel', 'Bauern, Handwerker, Kinder, zwei Zöllner und mindestens ein Hirte. Alle wollen ihn hören.'); },
+        talk: async () => {
+          await say('menge', 'Nicht drängeln! Wir stehen hier seit dem Morgengrauen!');
+          await say('joel', 'Ich dränge nicht. Ich staune nur mit etwas Anlauf.');
+        },
+      },
+      {
+        id: 'levi_see', name: 'Levi', rect: [816, 398, 48, 107], walk: [778, 508],
+        look: async () => { await say('joel', 'Levi sammelt Muscheln. Mit siebzig. Manche Dinge ändern sich nie, und das ist auch gut so.'); },
+        talk: async () => {
+          await say('levi', 'Joel! Möwen sind wie Schafe, nur frecher. Eine hat mir eben das Brot aus der Hand geholt. IM FLUG.');
+          if (!F.netzeSauber) await say('levi', 'Der Fischer da drüben könnte übrigens Hilfe gebrauchen. Du bist doch so gut im Anpacken.');
+          else if (!F.bootDraussen) await say('levi', 'Wenn das Boot raus soll, sag Bescheid. Ich übernehme die Gesamtaufsicht – ich habe von Schimon gelernt.');
+          else await say('levi', 'Schau aufs Wasser, Joel. Einfach nur schauen.');
+        },
+      },
+      {
+        id: 'wasser', name: 'See Gennesaret', rect: [0, 210, 960, 170], noWalk: true,
+        look: async () => { await say('joel', 'Der See Gennesaret, glatt wie poliertes Kupfer im Morgenlicht. Am anderen Ufer steigen die Berge auf.'); },
+      },
+      {
+        id: 'kapernaum', name: 'Kapernaum', rect: [712, 308, 248, 95], noWalk: true,
+        look: async () => { await say('joel', 'Kapernaum. Fischerstadt, Zollstation, Garnison – und seit Kurzem der Ort, über den ganz Galiläa redet.'); },
+      },
+      {
+        id: 'moewen', name: 'Möwen', rect: [380, 40, 220, 90], noWalk: true,
+        look: async () => { await say('joel', 'Möwen kreisen über dem Wasser. Sie schreien wie Levi beim Engel. Also: durchdringend.'); },
+      },
+      {
+        id: 'weg_see', name: 'Weg nach Nazaret', rect: [918, 400, 42, 130], walk: [905, 490],
+        goto: async () => { await say('joel', 'Zurück? JETZT? Levi, halt mich fest – wir bleiben.'); },
+        look: async () => { await say('joel', 'Der Weg zurück in die Berge, nach Nazaret. Ein langer Marsch für alte Hirtenbeine – aber er hat sich gelohnt.'); },
+      },
+    ],
+  },
 };
 
 async function tryWarn() {
@@ -1275,6 +2355,147 @@ for (let i = 0; i < 90; i++) {
   STARS.push({ x: (i * 173.3) % 960, y: (i * 97.7) % 380, r: 0.6 + (i % 3) * 0.5, ph: i * 1.7 });
 }
 
+/* --------------- Raum: Feld am Tag --------------- */
+
+function drawFeldTag(t) {
+  const s = fx.sonne;                                     // 0 = Nachmittag, 1 = Sonnenuntergang
+
+  // Himmel: Spätnachmittag, mit der Cutscene ins Abendrot kippend
+  const sky = ctx.createLinearGradient(0, 0, 0, 420);
+  sky.addColorStop(0, '#6fa9dd');
+  sky.addColorStop(1, '#cfe6ef');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, 420);
+  if (s > 0) {
+    const rot = ctx.createLinearGradient(0, 0, 0, 420);
+    rot.addColorStop(0, `rgba(50,40,90,${0.55 * s})`);
+    rot.addColorStop(0.6, `rgba(200,90,60,${0.4 * s})`);
+    rot.addColorStop(1, `rgba(255,150,70,${0.5 * s})`);
+    ctx.fillStyle = rot;
+    ctx.fillRect(0, 0, W, 420);
+  }
+
+  // sinkende Sonne im Westen
+  const sy = 110 + s * 240;
+  glow(160, sy, 130, 'rgba(255,220,130,A)', 0.3 + 0.15 * s);
+  ctx.fillStyle = s < 0.5 ? '#fff2c0' : '#ffba60';
+  ctx.beginPath(); ctx.arc(160, sy, 26, 0, 7); ctx.fill();
+
+  // Schwalben
+  ctx.strokeStyle = 'rgba(40,50,70,0.75)';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 3; i++) {
+    const bx = ((t * 26 + i * 320) % 1100) - 70;
+    const by = 80 + i * 38 + Math.sin(t * 2.2 + i * 2) * 7;
+    ctx.beginPath();
+    ctx.moveTo(bx - 7, by);
+    ctx.quadraticCurveTo(bx - 3, by - 5, bx, by);
+    ctx.quadraticCurveTo(bx + 3, by - 5, bx + 7, by);
+    ctx.stroke();
+  }
+
+  // Hügel mit Bethlehem (Tagfarben)
+  ctx.fillStyle = '#4a7038';
+  ctx.beginPath(); ctx.ellipse(840, 415, 200, 68, 0, Math.PI, 0); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(80, 418, 220, 45, 0, Math.PI, 0); ctx.fill();
+  for (const [hx, hy, hw, hh] of [[760, 364, 26, 22], [792, 352, 32, 34], [830, 358, 26, 28], [862, 348, 34, 38], [902, 362, 24, 24]]) {
+    px(hx, hy, hw, hh, '#cfc2a0');
+    px(hx, hy, hw, 5, '#8a7a5e');
+    px(hx + 5, hy + 9, 5, 6, '#3a3026');
+  }
+
+  // Wiese
+  px(0, 405, W, 135, '#4a7c36');
+  ctx.fillStyle = '#558a3e';
+  for (let i = 0; i < 26; i++) px((i * 167) % 940, 420 + (i * 53) % 110, 14, 3, '#558a3e');
+
+  // Bach unten links
+  ctx.fillStyle = '#3f7ea6';
+  ctx.beginPath();
+  ctx.moveTo(0, 468);
+  ctx.quadraticCurveTo(85, 492, 138, 540);
+  ctx.lineTo(0, 540);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = `rgba(220,240,250,${0.4 + 0.2 * Math.abs(Math.sin(t * 2.4))})`;
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(14, 486); ctx.quadraticCurveTo(50, 496, 80, 514); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(40, 478); ctx.quadraticCurveTo(72, 490, 104, 512); ctx.stroke();
+
+  // Weg nach Bethlehem
+  ctx.fillStyle = '#9a8a5e';
+  ctx.beginPath();
+  ctx.moveTo(700, 540); ctx.lineTo(960, 540); ctx.lineTo(960, 425); ctx.lineTo(880, 425);
+  ctx.closePath(); ctx.fill();
+
+  px(866, 428, 6, 34, '#5a4630');                         // Schild
+  px(842, 412, 56, 20, '#6a4a2a');
+  ctx.fillStyle = '#e8d8a8';
+  ctx.font = 'bold 9px Verdana';
+  ctx.textAlign = 'center';
+  ctx.fillText('BETLEHEM →', 870, 425);
+
+  // Olivenbaum
+  px(108, 330, 22, 112, '#5a4630');
+  px(118, 360, 30, 10, '#4e3a26');
+  ctx.fillStyle = '#2e5a32';
+  for (const [cx2, cy2, r2] of [[100, 310, 38], [140, 295, 42], [120, 330, 36], [160, 320, 30]]) {
+    ctx.beginPath(); ctx.arc(cx2, cy2, r2, 0, 7); ctx.fill();
+  }
+  ctx.fillStyle = '#3a6a3e';
+  ctx.beginPath(); ctx.arc(112, 300, 26, 0, 7); ctx.fill();
+
+  // Felsen (tagsüber heller) + Levis Flöte im Spalt
+  ctx.fillStyle = '#73737e';
+  ctx.beginPath(); ctx.arc(820, 488, 28, 0, 7); ctx.fill();
+  ctx.fillStyle = '#62626c';
+  ctx.beginPath(); ctx.arc(858, 494, 21, 0, 7); ctx.fill();
+  ctx.fillStyle = '#7e7e8a';
+  ctx.beginPath(); ctx.arc(792, 496, 17, 0, 7); ctx.fill();
+  if (!F.tookFloete) {
+    ctx.save();
+    ctx.translate(832, 468);
+    ctx.rotate(-0.5);
+    px(-2, -12, 4, 24, '#d8c08a');                        // Flöte ragt aus dem Spalt
+    ctx.restore();
+    ctx.fillStyle = `rgba(255,255,220,${0.4 + 0.5 * Math.abs(Math.sin(t * 3))})`;
+    ctx.fillRect(836, 456, 3, 3);                         // Glitzern als Hinweis
+  }
+
+  // Tränke
+  px(484, 484, 88, 22, '#6a4a2a');
+  px(488, 488, 80, 14, F.traenkeVoll ? '#4a8ab0' : '#54381e');
+  px(490, 506, 8, 14, '#553a20');
+  px(558, 506, 8, 14, '#553a20');
+  if (F.traenkeVoll) {
+    ctx.fillStyle = `rgba(220,240,250,${0.3 + 0.2 * Math.abs(Math.sin(t * 2))})`;
+    ctx.fillRect(500, 490, 24, 3);
+  }
+
+  // Feuerstelle (kalt) + Eimer
+  ctx.fillStyle = '#6a6a5e';
+  for (const [fxs, fys] of [[362, 482], [400, 482], [370, 490], [394, 490], [381, 478]]) {
+    ctx.beginPath(); ctx.arc(fxs, fys, 5, 0, 7); ctx.fill();
+  }
+  px(370, 478, 22, 6, '#3a342c');                         // alte Asche
+  if (!F.tookEimer) {
+    px(318, 466, 22, 18, '#7a5a34');                      // Eimer
+    px(320, 468, 18, 3, '#5a3f22');
+    ctx.strokeStyle = '#4a3826';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(329, 466, 10, Math.PI, 0); ctx.stroke();
+  }
+
+  // Schafe (gleiche Herde wie nachts)
+  drawSheep(600, 488, t, 0);
+  drawSheep(660, 512, t, 1);
+  drawSheep(576, 522, t, 2);
+  drawSheep(700, 478, t, 3);
+
+  // Schimon (wach und aufrecht – noch) und Levi
+  drawPerson(295, 490, { tunic: '#6b4a3a', cloth: '#a89070', facing: 1 });
+  drawPerson(468, 484, { tunic: '#5d7a4a', cloth: '#dcd8c8', facing: -1 });
+}
+
 function drawField(t) {
   const sky = ctx.createLinearGradient(0, 0, 0, 420);
   sky.addColorStop(0, '#04051a');
@@ -1389,6 +2610,81 @@ function drawField(t) {
 
   drawStar(740, 95, fx.starGrow, t);
   if (fx.angelVisible) drawAngel(480, fx.angelY, t);
+}
+
+/* --------------- Raum: Weg nach Bethlehem --------------- */
+
+function drawWeg(t) {
+  const sky = ctx.createLinearGradient(0, 0, 0, 420);
+  sky.addColorStop(0, '#04051a');
+  sky.addColorStop(1, '#0d1535');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, 420);
+
+  for (const s of STARS) {
+    ctx.fillStyle = `rgba(255,255,240,${0.35 + 0.45 * Math.abs(Math.sin(t + s.ph))})`;
+    ctx.fillRect(s.x, s.y, s.r * 2, s.r * 2);
+  }
+
+  ctx.fillStyle = '#e8e4cf';                              // Mond, schon hinter uns
+  ctx.beginPath(); ctx.arc(76, 70, 22, 0, 7); ctx.fill();
+  ctx.fillStyle = '#cfcab2';
+  ctx.beginPath(); ctx.arc(70, 64, 5, 0, 7); ctx.fill();
+
+  // Hügel – Bethlehem ist schon deutlich näher
+  ctx.fillStyle = '#101e13';
+  ctx.beginPath(); ctx.ellipse(660, 424, 360, 140, 0, Math.PI, 0); ctx.fill();
+  ctx.fillStyle = '#0c180e';
+  ctx.beginPath(); ctx.ellipse(90, 426, 240, 60, 0, Math.PI, 0); ctx.fill();
+
+  // Stadtmauer mit Zinnen und Tor
+  px(480, 338, 360, 46, '#2a2438');
+  for (let i = 0; i < 9; i++) px(484 + i * 41, 326, 24, 14, '#2a2438');
+  px(636, 344, 48, 40, '#14101f');                        // Stadttor
+
+  // Häuser über der Mauer
+  for (const [hx, hy, hw, hh] of [[506, 296, 42, 44], [560, 276, 50, 64], [622, 252, 64, 88], [700, 272, 48, 68], [758, 296, 44, 44]]) {
+    px(hx, hy, hw, hh, '#241f33');
+    px(hx + 7, hy + 12, 7, 9, '#ffda70');
+    if (hw > 45) px(hx + hw - 14, hy + 26, 7, 9, '#ffc850');
+  }
+
+  drawStar(660, 92, 0.85, t);                             // genau über der Stadt
+
+  px(0, 408, W, 132, '#15301c');                          // Wiese
+  for (let i = 0; i < 26; i++) px((i * 167) % 940, 422 + (i * 53) % 108, 14, 3, '#1c3a23');
+
+  // Weg quer durchs Bild...
+  ctx.fillStyle = '#3c3526';
+  ctx.beginPath();
+  ctx.moveTo(0, 540); ctx.lineTo(960, 540); ctx.lineTo(960, 456); ctx.lineTo(0, 484);
+  ctx.closePath(); ctx.fill();
+  // ...und hinauf zum Stadttor
+  ctx.beginPath();
+  ctx.moveTo(720, 468); ctx.lineTo(816, 462); ctx.lineTo(688, 384); ctx.lineTo(648, 384);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#332d20';
+  for (let i = 0; i < 30; i++) px((i * 113) % 930, 466 + (i * 43) % 64, 16, 4, '#332d20');
+
+  // Felsbrocken am Wegrand
+  ctx.fillStyle = '#494952';
+  ctx.beginPath(); ctx.arc(120, 448, 16, 0, 7); ctx.fill();
+  ctx.fillStyle = '#3e3e46';
+  ctx.beginPath(); ctx.arc(148, 454, 11, 0, 7); ctx.fill();
+
+  // Zypressen am Wegrand
+  ctx.fillStyle = '#0e2412';
+  for (const [zx, zh] of [[212, 92], [884, 72]]) {
+    ctx.beginPath();
+    ctx.moveTo(zx, 424);
+    ctx.quadraticCurveTo(zx - 14, 424 - zh * 0.5, zx, 424 - zh);
+    ctx.quadraticCurveTo(zx + 14, 424 - zh * 0.5, zx, 424);
+    ctx.fill();
+  }
+
+  // Schimon & Levi, ein Stück voraus, zu Joel umgedreht
+  drawPerson(462, 500, { tunic: '#6b4a3a', cloth: '#a89070', facing: -1 });
+  drawPerson(560, 496, { tunic: '#5d7a4a', cloth: '#dcd8c8', facing: -1 });
 }
 
 /* --------------- Raum: Bethlehem bei Nacht --------------- */
@@ -1744,6 +3040,482 @@ function drawFlucht(t) {
   }
 }
 
+/* --------------- Raum: Am Rand Ägyptens --------------- */
+
+function drawPalme(x, y, h, t) {
+  const topX = x - h * 0.12, topY = y - h;
+  ctx.strokeStyle = '#6a4a2e';                            // Stamm
+  ctx.lineWidth = 9;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.quadraticCurveTo(x + 6, y - h * 0.55, topX, topY);
+  ctx.stroke();
+  ctx.strokeStyle = '#5a3e24';                            // Stammringe
+  ctx.lineWidth = 2;
+  for (let i = 1; i < 5; i++) {
+    const ry = y - h * i * 0.18;
+    ctx.beginPath(); ctx.moveTo(x - 1 + i, ry); ctx.lineTo(x + 7, ry); ctx.stroke();
+  }
+  const sway = Math.sin(t * 1.2 + x) * 3;                 // Wedel
+  ctx.strokeStyle = '#2e5a2a';
+  ctx.lineWidth = 4;
+  for (const [dx, dy] of [[-40, -4], [-30, -20], [-10, -28], [10, -26], [30, -16], [40, 0]]) {
+    ctx.beginPath();
+    ctx.moveTo(topX, topY);
+    ctx.quadraticCurveTo(topX + dx * 0.6, topY + dy - 10, topX + dx + sway, topY + dy + 12);
+    ctx.stroke();
+  }
+}
+
+function drawPyramide(ax, ay, half, baseY, dark, lit) {
+  ctx.fillStyle = dark;
+  ctx.beginPath();
+  ctx.moveTo(ax, ay); ctx.lineTo(ax - half, baseY); ctx.lineTo(ax + half, baseY);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = lit;                                    // sonnenbeschienene Ostflanke
+  ctx.beginPath();
+  ctx.moveTo(ax, ay); ctx.lineTo(ax + half, baseY); ctx.lineTo(ax + half * 0.35, baseY);
+  ctx.closePath(); ctx.fill();
+}
+
+function drawAegypten(t) {
+  // Abendhimmel über der Wüste
+  const sky = ctx.createLinearGradient(0, 0, 0, 420);
+  sky.addColorStop(0, '#241c4a');
+  sky.addColorStop(0.55, '#7a3a50');
+  sky.addColorStop(1, '#e8884a');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, 420);
+
+  // sinkende Sonne (verschwindet, wenn der Abend kommt)
+  const sunA = Math.max(0, 1 - fx.abend * 2);
+  if (sunA > 0) {
+    glow(482, 372, 160, 'rgba(255,170,80,A)', 0.35 * sunA);
+    ctx.fillStyle = `rgba(255,210,120,${sunA})`;
+    ctx.beginPath(); ctx.arc(482, 372, 20, 0, 7); ctx.fill();
+  }
+
+  // die Pyramiden am Horizont
+  drawPyramide(170, 245, 118, 410, '#3a2a44', '#7a4450');
+  drawPyramide(310, 298, 86, 410, '#352640', '#70404c');
+  drawPyramide(420, 348, 56, 410, '#302338', '#684048');
+
+  // Wüste
+  px(0, 400, W, 140, '#c89a5e');
+  ctx.fillStyle = '#b8905a';                              // Dünenkämme
+  ctx.beginPath(); ctx.ellipse(700, 412, 260, 16, 0, Math.PI, 0); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(120, 415, 200, 12, 0, Math.PI, 0); ctx.fill();
+  ctx.fillStyle = '#b88950';
+  for (let i = 0; i < 30; i++) px((i * 127) % 930, 425 + (i * 59) % 100, 18, 3, '#b88950');
+
+  // Quelle mit Wasserbecken
+  ctx.fillStyle = '#8a6a40';
+  ctx.beginPath(); ctx.ellipse(270, 487, 70, 19, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = '#2e5d7a';
+  ctx.beginPath(); ctx.ellipse(270, 486, 62, 15, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = `rgba(180,220,240,${0.25 + 0.15 * Math.abs(Math.sin(t * 1.6))})`;
+  ctx.beginPath(); ctx.ellipse(255, 483, 26, 5, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = '#6a6a5a';                              // Steine am Rand
+  ctx.beginPath(); ctx.arc(205, 478, 9, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(335, 482, 7, 0, 7); ctx.fill();
+  ctx.strokeStyle = '#3e6a32';                            // Gräser
+  ctx.lineWidth = 2;
+  for (const gx of [200, 212, 330, 342]) {
+    ctx.beginPath(); ctx.moveTo(gx, 472); ctx.lineTo(gx - 3, 458); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(gx + 3, 472); ctx.lineTo(gx + 7, 460); ctx.stroke();
+  }
+
+  // Palmen der Oase
+  drawPalme(118, 468, 85, t);
+  drawPalme(372, 472, 130, t);
+  if (!F.dattelnTaken) {                                  // Dattelrispe
+    ctx.fillStyle = '#b06a2a';
+    for (let i = 0; i < 9; i++) {
+      ctx.beginPath();
+      ctx.arc(348 + (i % 3) * 7, 348 + Math.floor(i / 3) * 7, 4, 0, 7);
+      ctx.fill();
+    }
+  }
+
+  // Gepäck der Familie
+  px(518, 478, 44, 26, '#6a5438');                        // Kiste
+  px(524, 466, 32, 14, '#8a4f3a');                        // Deckenrolle
+  px(548, 488, 28, 18, '#a89070');                        // Bündel
+  ctx.strokeStyle = '#4a3826';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(548, 497); ctx.lineTo(576, 497); ctx.stroke();
+
+  // Feuerstelle (brennt erst am Abend)
+  ctx.fillStyle = '#7a7a6a';
+  for (const [sx, sy] of [[614, 494], [666, 494], [624, 502], [656, 502], [640, 490]]) {
+    ctx.beginPath(); ctx.arc(sx, sy, 6, 0, 7); ctx.fill();
+  }
+  const feuerAn = F.abendDone || fx.abend > 0.3;
+  drawFire(640, 496, feuerAn, t);
+
+  // Abenddämmerung legt sich über alles
+  if (fx.abend > 0) {
+    ctx.fillStyle = `rgba(8,8,30,${0.5 * fx.abend})`;
+    ctx.fillRect(0, 0, W, H);
+    for (const s of STARS) {
+      if (s.y > 300) continue;
+      ctx.fillStyle = `rgba(255,255,240,${(0.3 + 0.4 * Math.abs(Math.sin(t + s.ph))) * fx.abend})`;
+      ctx.fillRect(s.x, s.y, s.r * 2, s.r * 2);
+    }
+    if (feuerAn) glow(640, 470, 180, 'rgba(255,180,80,A)', 0.2 * fx.abend);
+  }
+
+  // Esel an der Oase
+  drawEsel(450, 512, t);
+
+  // Maria (mit dem Kind im Arm) und Josef am Lagerplatz
+  drawPerson(700, 492, { tunic: '#4a5f9e', cloth: '#e8e8f0', mode: 'sit', facing: -1 });
+  ctx.fillStyle = '#f4f0e4';                              // das Kind
+  ctx.beginPath(); ctx.ellipse(684, 450, 12, 7, -0.3, 0, 7); ctx.fill();
+  ctx.fillStyle = '#e8c9a0';
+  ctx.beginPath(); ctx.arc(675, 448, 5, 0, 7); ctx.fill();
+  drawPerson(768, 502, { tunic: '#5a4632', cloth: '#8a7a5a', facing: -1 });
+}
+
+/* --------------- Raum: Weide vor Nazaret --------------- */
+
+function drawKid(x, y, o) {
+  const f = o.facing || 1;
+  px(x - 6, y - 16, 5, 16, '#3a2c1e');                    // Beine
+  px(x + 1, y - 16, 5, 16, '#33271b');
+  px(x - 10, y - 52, 20, 38, o.tunic);                    // Gewand
+  px(x - 13, y - 48, 4, 20, shade(o.tunic, -12));         // Arme
+  px(x + 9, y - 48, 4, 20, shade(o.tunic, -12));
+  px(x - 6, y - 66, 12, 15, '#d8a87a');                   // Kopf
+  px(x - 8, y - 71, 16, 7, o.cloth);                      // Haar
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillRect(x - 3 + f * 2, y - 61, 2, 2);
+  ctx.fillRect(x + 2 + f * 2, y - 61, 2, 2);
+}
+
+function drawNazaret(t) {
+  // heller Vormittag in Galiläa
+  const sky = ctx.createLinearGradient(0, 0, 0, 420);
+  sky.addColorStop(0, '#79b4e2');
+  sky.addColorStop(1, '#d8ecf2');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, 420);
+  glow(820, 70, 130, 'rgba(255,250,200,A)', 0.3);
+  ctx.fillStyle = '#fff6d0';
+  ctx.beginPath(); ctx.arc(820, 70, 24, 0, 7); ctx.fill();
+
+  // Schwalben
+  ctx.strokeStyle = 'rgba(40,50,70,0.7)';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 2; i++) {
+    const bx = ((t * 22 + i * 420) % 1100) - 70;
+    const by = 95 + i * 50 + Math.sin(t * 2 + i * 3) * 8;
+    ctx.beginPath();
+    ctx.moveTo(bx - 7, by);
+    ctx.quadraticCurveTo(bx - 3, by - 5, bx, by);
+    ctx.quadraticCurveTo(bx + 3, by - 5, bx + 7, by);
+    ctx.stroke();
+  }
+
+  // Hügel Galiläas
+  ctx.fillStyle = '#5a8a48';
+  ctx.beginPath(); ctx.ellipse(180, 420, 320, 90, 0, Math.PI, 0); ctx.fill();
+  ctx.fillStyle = '#4e7c3e';
+  ctx.beginPath(); ctx.ellipse(780, 426, 380, 150, 0, Math.PI, 0); ctx.fill();
+
+  // Nazaret am Hang
+  for (const [hx, hy, hw, hh] of [[640, 318, 40, 36], [690, 296, 50, 58], [748, 270, 60, 84], [816, 288, 48, 66], [872, 308, 42, 46], [716, 338, 36, 26]]) {
+    px(hx, hy, hw, hh, '#d8cba8');
+    px(hx, hy, hw, 6, '#9a8a6a');
+    px(hx + 6, hy + 12, 6, 8, '#4a3c2c');
+    if (hw > 45) px(hx + hw - 13, hy + 18, 6, 8, '#4a3c2c');
+  }
+
+  // Wiese
+  px(0, 405, W, 135, '#4d8038');
+  ctx.fillStyle = '#578e40';
+  for (let i = 0; i < 26; i++) px((i * 167) % 940, 420 + (i * 53) % 110, 14, 3, '#578e40');
+
+  // Weg in die Stadt
+  ctx.fillStyle = '#9a8a5e';
+  ctx.beginPath();
+  ctx.moveTo(740, 540); ctx.lineTo(960, 540); ctx.lineTo(960, 420); ctx.lineTo(880, 400);
+  ctx.lineTo(820, 360); ctx.lineTo(845, 358); ctx.lineTo(905, 405);
+  ctx.closePath(); ctx.fill();
+
+  px(890, 430, 6, 34, '#5a4630');                         // Schild
+  px(864, 414, 60, 20, '#6a4a2a');
+  ctx.fillStyle = '#e8d8a8';
+  ctx.font = 'bold 9px Verdana';
+  ctx.textAlign = 'center';
+  ctx.fillText('NAZARET →', 894, 427);
+
+  // Feigenbaum
+  px(100, 320, 24, 122, '#5a4630');
+  px(112, 350, 32, 10, '#4e3a26');
+  ctx.fillStyle = '#356e30';
+  for (const [cx2, cy2, r2] of [[95, 300, 42], [140, 286, 46], [115, 322, 38], [162, 312, 32]]) {
+    ctx.beginPath(); ctx.arc(cx2, cy2, r2, 0, 7); ctx.fill();
+  }
+  ctx.fillStyle = '#418040';
+  ctx.beginPath(); ctx.arc(108, 292, 28, 0, 7); ctx.fill();
+
+  // Brunnen
+  ctx.fillStyle = '#8a8a90';
+  ctx.beginPath(); ctx.ellipse(484, 472, 42, 17, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = '#5a5a64';
+  ctx.beginPath(); ctx.ellipse(484, 468, 32, 12, 0, 0, 7); ctx.fill();
+  px(450, 404, 5, 64, '#5a4630');
+  px(513, 404, 5, 64, '#5a4630');
+  px(446, 398, 76, 8, '#5a4630');
+  ctx.strokeStyle = '#8a7a5a';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(484, 406); ctx.lineTo(484, 436); ctx.stroke();
+  px(477, 436, 14, 10, '#6a4a2a');
+
+  // Joels Herde
+  drawSheep(150, 490, t, 0);
+  drawSheep(205, 514, t, 1);
+  drawSheep(255, 486, t, 2);
+  drawSheep(170, 524, t, 3);
+  drawSheep(235, 500, t, 4);
+
+  // Leute von Nazaret
+  drawPerson(540, 502, { tunic: '#a04a6a', cloth: '#e8d8c0', facing: -1 });   // Rahel
+  px(550, 458, 12, 16, '#b06a3a');                                           // ihr Wasserkrug
+  drawPerson(720, 506, { tunic: '#7a6a3a', cloth: '#c8b890', facing: -1 });   // Eli
+  ctx.strokeStyle = '#8a7a5a';                                               // seine Hacke
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(746, 506); ctx.lineTo(746, 416); ctx.stroke();
+  px(738, 410, 18, 8, '#6a6a72');
+  drawKid(280, 508, { tunic: '#3a8a7a', cloth: '#6a4630', facing: -1 });      // Mirjam
+  if (F.josefDa) drawPerson(840, 504, { tunic: '#5a4632', cloth: '#8a7a5a', facing: -1 });
+}
+
+/* --------------- Raum: Synagoge von Nazaret --------------- */
+
+function drawSynagoge(t) {
+  // Wände und Boden
+  px(0, 0, W, 400, '#a8967a');
+  ctx.strokeStyle = '#94835f';
+  ctx.lineWidth = 2;
+  for (let i = 1; i < 5; i++) { ctx.beginPath(); ctx.moveTo(0, i * 80); ctx.lineTo(W, i * 80); ctx.stroke(); }
+  for (let i = 0; i < 12; i++) { ctx.beginPath(); ctx.moveTo(i * 90 + (i % 2) * 45, 0); ctx.lineTo(i * 90 + (i % 2) * 45, 400); ctx.stroke(); }
+  px(0, 396, W, 144, '#8a7a62');
+  ctx.fillStyle = '#7c6e58';
+  for (let i = 0; i < 24; i++) px((i * 149) % 920, 410 + (i * 61) % 115, 26, 4, '#7c6e58');
+
+  // Säulen
+  for (const cx2 of [110, 850]) {
+    px(cx2 - 16, 70, 32, 330, '#c4b294');
+    px(cx2 - 22, 56, 44, 16, '#b4a284');
+    px(cx2 - 22, 396, 44, 10, '#b4a284');
+  }
+
+  // Fenster mit Morgenlicht
+  px(700, 80, 120, 110, '#5a4a36');
+  px(708, 88, 104, 94, '#ffeebf');
+  px(754, 88, 8, 94, '#5a4a36');
+  ctx.fillStyle = 'rgba(255,240,190,0.16)';
+  ctx.beginPath();
+  ctx.moveTo(708, 182); ctx.lineTo(812, 182); ctx.lineTo(580, 400); ctx.lineTo(420, 400);
+  ctx.closePath(); ctx.fill();
+
+  // siebenarmiger Leuchter
+  px(146, 178, 8, 36, '#8a6a30');
+  px(130, 210, 40, 8, '#8a6a30');
+  ctx.strokeStyle = '#8a6a30';
+  ctx.lineWidth = 5;
+  for (const r of [14, 26]) {
+    ctx.beginPath(); ctx.arc(150, 178, r, Math.PI, 0); ctx.stroke();
+  }
+  for (const lx of [124, 136, 150, 164, 176]) {
+    const fl = Math.sin(t * 9 + lx) * 1.5;
+    ctx.fillStyle = '#ffd54a';
+    ctx.beginPath();
+    ctx.moveTo(lx - 3, 156); ctx.lineTo(lx + fl * 0.4, 144); ctx.lineTo(lx + 3, 156);
+    ctx.closePath(); ctx.fill();
+  }
+  glow(150, 160, 90, 'rgba(255,200,90,A)', 0.12);
+
+  // Bima mit Lesepult und Jesus
+  px(390, 396, 180, 16, '#6a5a44');
+  px(398, 388, 164, 10, '#75644c');
+  drawPerson(480, 408, { tunic: '#e8e4d4', cloth: '#c8b89a', facing: 1 });
+  px(455, 352, 50, 10, '#5a4630');                        // Pult
+  px(476, 362, 8, 40, '#5a4630');
+  px(450, 344, 60, 9, '#d8c08a');                         // Schriftrolle
+  px(446, 342, 8, 13, '#b89a5e');
+  px(506, 342, 8, 13, '#b89a5e');
+
+  // Bänke mit Versammlung
+  for (const [bx, bw] of [[130, 260], [596, 240]]) {
+    px(bx, 486, bw, 10, '#6a5438');
+    px(bx + 8, 496, 8, 22, '#5a4630');
+    px(bx + bw - 16, 496, 8, 22, '#5a4630');
+  }
+  drawPerson(160, 500, { tunic: '#7a5a6a', cloth: '#c8c0b0', mode: 'sit', facing: 1 });
+  drawPerson(215, 502, { tunic: '#5d7a4a', cloth: '#d8d8d8', mode: 'sit', facing: 1 });  // Levi, ergraut
+  drawPerson(278, 500, { tunic: '#4a6a8a', cloth: '#b8a890', mode: 'sit', facing: 1 });
+  drawPerson(620, 500, { tunic: '#8a6a4a', cloth: '#c0b8a8', mode: 'sit', facing: -1 });
+  drawPerson(682, 503, { tunic: '#6a7a5a', cloth: '#d0c8b8', mode: 'sit', facing: -1 });
+  drawPerson(744, 499, { tunic: '#9a6a5a', cloth: '#c8c0b0', mode: 'sit', facing: -1 });
+  drawPerson(806, 503, { tunic: '#5a5a7a', cloth: '#b8b0a0', mode: 'sit', facing: -1 });
+  drawKid(852, 506, { tunic: '#7a8a4a', cloth: '#5a4630', facing: -1 });
+}
+
+/* --------------- Raum: See Gennesaret --------------- */
+
+function drawBoot(x, y, w) {
+  ctx.fillStyle = '#6a4a2e';
+  ctx.beginPath();
+  ctx.moveTo(x - w / 2, y - 22);
+  ctx.quadraticCurveTo(x, y + 20, x + w / 2, y - 22);
+  ctx.quadraticCurveTo(x, y - 6, x - w / 2, y - 22);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#8a6a42';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(x - w / 2, y - 22);
+  ctx.quadraticCurveTo(x, y - 6, x + w / 2, y - 22);
+  ctx.stroke();
+}
+
+function drawSee(t) {
+  // Morgenhimmel über dem See
+  const sky = ctx.createLinearGradient(0, 0, 0, 210);
+  sky.addColorStop(0, '#a4cce6');
+  sky.addColorStop(1, '#e6eedd');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, 210);
+  glow(120, 80, 140, 'rgba(255,250,210,A)', 0.35);
+  ctx.fillStyle = '#fff6d0';
+  ctx.beginPath(); ctx.arc(120, 80, 26, 0, 7); ctx.fill();
+
+  // Möwen
+  ctx.strokeStyle = 'rgba(60,70,90,0.7)';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 3; i++) {
+    const bx = ((t * 24 + i * 300) % 1100) - 70;
+    const by = 60 + i * 32 + Math.sin(t * 2.4 + i * 2) * 9;
+    ctx.beginPath();
+    ctx.moveTo(bx - 8, by);
+    ctx.quadraticCurveTo(bx - 4, by - 6, bx, by);
+    ctx.quadraticCurveTo(bx + 4, by - 6, bx + 8, by);
+    ctx.stroke();
+  }
+
+  // Berge am Ostufer
+  ctx.fillStyle = '#8aa0b2';
+  ctx.beginPath(); ctx.ellipse(260, 214, 340, 52, 0, Math.PI, 0); ctx.fill();
+  ctx.fillStyle = '#7a94a8';
+  ctx.beginPath(); ctx.ellipse(700, 216, 380, 64, 0, Math.PI, 0); ctx.fill();
+
+  // Wasser
+  const wasser = ctx.createLinearGradient(0, 210, 0, 420);
+  wasser.addColorStop(0, '#5a96be');
+  wasser.addColorStop(1, '#7ab4cc');
+  ctx.fillStyle = wasser;
+  ctx.fillRect(0, 210, W, 210);
+  for (let i = 0; i < 34; i++) {
+    const wy = 224 + (i * 37) % 188;
+    const wx = (i * 173 + Math.sin(t * 1.3 + i) * 22) % 920;
+    ctx.fillStyle = `rgba(230,245,250,${0.18 + 0.14 * Math.abs(Math.sin(t * 1.8 + i))})`;
+    ctx.fillRect(wx, wy, 30, 2);
+  }
+  glow(120, 250, 120, 'rgba(255,250,210,A)', 0.12);       // Sonnenspiegelung
+
+  // Landzunge, auf der Kapernaum liegt
+  ctx.fillStyle = '#c9b289';
+  ctx.beginPath();
+  ctx.moveTo(960, 336);
+  ctx.quadraticCurveTo(800, 356, 700, 428);
+  ctx.lineTo(960, 428);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = 'rgba(230,245,250,0.5)';              // Uferlinie
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(960, 338);
+  ctx.quadraticCurveTo(802, 358, 704, 426);
+  ctx.stroke();
+
+  // Kapernaum am Ufer
+  for (const [hx, hy, hw, hh] of [[762, 344, 44, 56], [814, 326, 56, 74], [878, 340, 46, 60], [766, 310, 36, 34]]) {
+    px(hx, hy, hw, hh, '#d2c4a2');
+    px(hx, hy, hw, 6, '#9a8a6a');
+    px(hx + 8, hy + 16, 7, 9, '#4a3c2c');
+  }
+  // kleiner Anleger
+  px(742, 396, 6, 26, '#5a4630');
+  px(716, 392, 60, 7, '#6a4a2e');
+
+  // Strand
+  ctx.fillStyle = '#d8c49a';
+  ctx.beginPath();
+  ctx.moveTo(0, 432); ctx.quadraticCurveTo(300, 398, 560, 408);
+  ctx.quadraticCurveTo(800, 416, 960, 396);
+  ctx.lineTo(960, 540); ctx.lineTo(0, 540);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#c4b086';
+  for (let i = 0; i < 26; i++) px((i * 157) % 930, 440 + (i * 53) % 92, 12, 3, '#c4b086');
+
+  // zweites Boot (Söhne des Zebedäus) – kommt beim Fang zu Hilfe
+  const b1x = 640 - fx.boot * 140, b1y = 440 - fx.boot * 78;
+  const b2x = 160 + fx.boot2 * (b1x + 140 - 160);
+  const b2y = 372 + fx.boot2 * (b1y + 6 - 372);
+  drawBoot(b2x, b2y, 100);
+  drawKid(b2x - 16, b2y - 6, { tunic: '#5a6a4a', cloth: '#4a3826', facing: 1 });
+  drawKid(b2x + 16, b2y - 6, { tunic: '#6a5a7a', cloth: '#3a2c1e', facing: -1 });
+
+  // Netze am Strand
+  const netzFarbe = F.netzeSauber ? '#c8b890' : '#6a5a40';
+  px(444, 452, 5, 46, '#5a4630');
+  px(534, 452, 5, 46, '#5a4630');
+  ctx.strokeStyle = netzFarbe;
+  ctx.lineWidth = 1.5;
+  for (let i = 0; i < 6; i++) {
+    ctx.beginPath(); ctx.moveTo(448, 458 + i * 7); ctx.quadraticCurveTo(490, 466 + i * 7, 536, 458 + i * 7); ctx.stroke();
+  }
+  for (let i = 0; i < 7; i++) {
+    ctx.beginPath(); ctx.moveTo(450 + i * 14, 456); ctx.lineTo(452 + i * 14, 498); ctx.stroke();
+  }
+
+  // Simons Boot – am Strand oder draußen mit Jesus und Simon
+  if (fx.boot === 0) {
+    drawBoot(640, 440, 140);
+    drawPerson(520, 505, { tunic: '#4a6a7a', cloth: '#b8a890', facing: -1 });   // Simon
+  } else {
+    drawBoot(b1x, b1y, 140);
+    drawPerson(b1x - 22, b1y - 8, { tunic: '#e8e4d4', cloth: '#c8b89a', mode: 'sit', facing: -1 });  // Jesus lehrt im Sitzen
+    drawPerson(b1x + 30, b1y - 2, { tunic: '#4a6a7a', cloth: '#b8a890', facing: -1 });               // Simon
+  }
+
+  // der große Fang: schäumendes Wasser und blitzende Fische
+  if (F.fangDone) {
+    for (let i = 0; i < 8; i++) {
+      const sx = b1x - 50 + (i * 31) % 110;
+      const sy = b1y + 16 + (i * 13) % 22;
+      ctx.fillStyle = `rgba(240,250,255,${0.3 + 0.3 * Math.abs(Math.sin(t * 4 + i * 2))})`;
+      ctx.beginPath(); ctx.ellipse(sx, sy, 10, 3, 0, 0, 7); ctx.fill();
+      if (i % 2 === 0) {
+        ctx.fillStyle = `rgba(220,230,240,${0.5 + 0.4 * Math.abs(Math.sin(t * 6 + i * 3))})`;
+        ctx.fillRect(sx + Math.sin(t * 5 + i) * 6, sy - 6, 6, 2);
+      }
+    }
+  }
+
+  // Menge am Ufer um Jesus
+  drawPerson(150, 502, { tunic: '#7a5a6a', cloth: '#c8c0b0', facing: 1 });
+  drawPerson(192, 510, { tunic: '#5a6a8a', cloth: '#b8a890', facing: 1 });
+  drawPerson(232, 504, { tunic: '#8a6a4a', cloth: '#d0c8b8', facing: 1 });
+  drawKid(282, 512, { tunic: '#7a8a4a', cloth: '#5a4630', facing: 1 });
+  drawPerson(310, 508, { tunic: '#6a7a5a', cloth: '#c0b8a8', facing: -1 });
+  if (fx.boot === 0) drawPerson(255, 498, { tunic: '#e8e4d4', cloth: '#c8b89a', facing: 1 });  // Jesus am Ufer
+
+  // Levi
+  drawPerson(840, 505, { tunic: '#5d7a4a', cloth: '#d8d8d8', facing: -1 });
+}
+
 /* --------------- Sprechtext --------------- */
 
 function wrapText(text, maxW) {
@@ -1811,14 +3583,21 @@ function loop(now) {
   }
 
   // Zeichnen
-  if (state.room === 'field') drawField(t);
+  if (state.room === 'feldtag') drawFeldTag(t);
+  else if (state.room === 'field') drawField(t);
+  else if (state.room === 'weg') drawWeg(t);
   else if (state.room === 'city') drawCity(t);
   else if (state.room === 'flucht') drawFlucht(t);
+  else if (state.room === 'aegypten') drawAegypten(t);
+  else if (state.room === 'nazaret') drawNazaret(t);
+  else if (state.room === 'synagoge') drawSynagoge(t);
+  else if (state.room === 'see') drawSee(t);
   else drawStable(t);
 
   if (player.visible) {
+    const alt = state.room === 'nazaret' || state.room === 'synagoge' || state.room === 'see';   // Joel ist ergraut
     drawPerson(player.x, player.y, {
-      tunic: '#8a6b3f', cloth: '#c9b48a',
+      tunic: '#8a6b3f', cloth: alt ? '#c8c8c8' : '#c9b48a',
       facing: player.facing,
       walk: player.walking ? player.walkT : 0,
     });
@@ -1885,8 +3664,13 @@ requestAnimationFrame(loop);
    ============================================================ */
 
 const DEBUG_PRESETS = {
-  'Feld: Anfang': {
-    room: 'field', pos: [560, 500], flags: {}, inv: [],
+  'Prolog: Tag auf dem Feld': {
+    room: 'feldtag', pos: [560, 500], flags: {}, inv: [],
+  },
+  'Feld: Anfang (Nacht)': {
+    room: 'field', pos: [560, 500],
+    flags: { tookEimer: false, traenkeVoll: true, tookFloete: true, floeteGiven: true, tagDone: true },
+    inv: [],
   },
   'Feld: Stern- & Engel-Cutscene': {
     room: 'field', pos: [560, 500],
@@ -1898,6 +3682,12 @@ const DEBUG_PRESETS = {
     room: 'field', pos: [560, 500],
     flags: { tookWood: true, tookStaff: true, fireLit: true, lambSaved: true, starDone: true, angelDone: true },
     inv: ['stab', 'lamm'],
+  },
+  'Weg nach Bethlehem: Zwischenszene': {
+    room: 'weg', pos: [40, 508],
+    flags: { tookWood: true, tookStaff: true, fireLit: true, lambSaved: true, starDone: true, angelDone: true },
+    inv: ['stab', 'lamm'],
+    action: async () => { await cutscene(async () => { await wegSzene(); await arriveCity(); }); },
   },
   'Stadt: Ankunft': {
     room: 'city', pos: [250, 508],
@@ -1929,6 +3719,59 @@ const DEBUG_PRESETS = {
              tookKrug: true, soldierBusy: true },
     inv: ['stab'],
   },
+  'Kapitel 3: Ägypten – Ankunft': {
+    room: 'aegypten', pos: [300, 508], facing: 1,
+    flags: { tookWood: true, tookStaff: true, fireLit: true, lambSaved: true, starDone: true, angelDone: true,
+             wirtOut: true, metWaechter: true, knowsCouple: true, foundStable: true,
+             tookKrug: true, soldierBusy: true, fleeing: true },
+    inv: ['stab'],
+  },
+  'Kapitel 3: Abend (Marias Erzählung)': {
+    room: 'aegypten', pos: [600, 508], facing: 1,
+    flags: { tookWood: true, tookStaff: true, fireLit: true, lambSaved: true, starDone: true, angelDone: true,
+             wirtOut: true, metWaechter: true, knowsCouple: true, foundStable: true,
+             tookKrug: true, soldierBusy: true, fleeing: true,
+             tookSchlauch: true, eselWasser: true, dattelnTaken: true, dattelnGiven: true },
+    inv: ['stab', 'schlauch'],
+    action: async () => { F.abendDone = true; await cutscene(() => abendCutscene()); },
+  },
+  'Kapitel 4: Nazaret – Heimkehr': {
+    room: 'nazaret', pos: [300, 508], facing: 1,
+    flags: { tagDone: true, tookWood: true, tookStaff: true, fireLit: true, lambSaved: true, starDone: true,
+             angelDone: true, wirtOut: true, metWaechter: true, knowsCouple: true, foundStable: true,
+             tookKrug: true, soldierBusy: true, fleeing: true,
+             tookSchlauch: true, eselWasser: true, dattelnTaken: true, dattelnGiven: true, abendDone: true },
+    inv: ['stab'],
+  },
+  'Kapitel 5: Synagoge (Predigt)': {
+    room: 'synagoge', pos: [280, 508], facing: 1,
+    flags: { tagDone: true, tookWood: true, tookStaff: true, fireLit: true, lambSaved: true, starDone: true,
+             angelDone: true, wirtOut: true, metWaechter: true, knowsCouple: true, foundStable: true,
+             tookKrug: true, soldierBusy: true, fleeing: true,
+             tookSchlauch: true, eselWasser: true, dattelnTaken: true, dattelnGiven: true, abendDone: true,
+             toldRahel: true, toldEli: true, toldMirjam: true, josefDa: true, heimkehrDone: true },
+    inv: ['stab'],
+  },
+  'Kapitel 6: See Gennesaret': {
+    room: 'see', pos: [740, 508], facing: -1,
+    flags: { tagDone: true, tookWood: true, tookStaff: true, fireLit: true, lambSaved: true, starDone: true,
+             angelDone: true, wirtOut: true, metWaechter: true, knowsCouple: true, foundStable: true,
+             tookKrug: true, soldierBusy: true, fleeing: true,
+             tookSchlauch: true, eselWasser: true, dattelnTaken: true, dattelnGiven: true, abendDone: true,
+             toldRahel: true, toldEli: true, toldMirjam: true, josefDa: true, heimkehrDone: true },
+    inv: ['stab'],
+  },
+  'Kapitel 6: Fang-Cutscene': {
+    room: 'see', pos: [640, 512], facing: -1,
+    flags: { tagDone: true, tookWood: true, tookStaff: true, fireLit: true, lambSaved: true, starDone: true,
+             angelDone: true, wirtOut: true, metWaechter: true, knowsCouple: true, foundStable: true,
+             tookKrug: true, soldierBusy: true, fleeing: true,
+             tookSchlauch: true, eselWasser: true, dattelnTaken: true, dattelnGiven: true, abendDone: true,
+             toldRahel: true, toldEli: true, toldMirjam: true, josefDa: true, heimkehrDone: true,
+             simonMet: true, netzeSauber: true, bootAngefragt: true },
+    inv: ['stab'],
+    action: async () => { await cutscene(() => bootUndFang()); },
+  },
 };
 
 function applyPreset(p) {
@@ -1944,6 +3787,10 @@ function applyPreset(p) {
   fx.starGrow = F.starDone ? 1 : 0;
   fx.angelVisible = false;
   fx.angelGlow = 0;
+  fx.abend = F.abendDone ? 1 : 0;
+  fx.sonne = F.tagDone ? 1 : 0;
+  fx.boot = F.bootDraussen ? 1.5 : 0;
+  fx.boot2 = F.fangDone ? 1 : 0;
   fx.fade = 0;
   speech = null;
   document.getElementById('title').classList.add('hidden');
