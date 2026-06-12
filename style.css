@@ -1,4 +1,16 @@
+:root {
+  --page-pad: 12px;
+  --sentence-height: 30px;
+  --ui-height: 152px;
+  --game-width: 960px;
+}
+
 * { box-sizing: border-box; user-select: none; }
+
+html {
+  height: 100%;
+  overflow: hidden;
+}
 
 body {
   background: #000;
@@ -6,14 +18,28 @@ body {
   font-family: 'Trebuchet MS', Verdana, sans-serif;
   display: flex;
   justify-content: center;
+  align-items: center;
   margin: 0;
-  padding: 12px;
+  min-height: 100dvh;
+  padding: var(--page-pad);
+  overflow: hidden;
+  touch-action: manipulation;
 }
 
-#wrap { position: relative; width: 960px; max-width: 100%; }
+#wrap {
+  position: relative;
+  width: var(--game-width);
+  max-width: calc(100vw - (var(--page-pad) * 2));
+  height: calc(100dvh - (var(--page-pad) * 2));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 
 canvas {
   width: 100%;
+  aspect-ratio: 16 / 9;
+  flex: 0 0 auto;
   display: block;
   background: #06081a;
   border: 2px solid #222;
@@ -22,8 +48,9 @@ canvas {
 canvas.hot { cursor: pointer; }
 
 #sentence {
-  height: 30px;
-  line-height: 30px;
+  height: var(--sentence-height);
+  line-height: var(--sentence-height);
+  flex: 0 0 var(--sentence-height);
   text-align: center;
   color: #7fdfff;
   background: #05050d;
@@ -37,14 +64,19 @@ canvas.hot { cursor: pointer; }
   display: flex;
   background: #0a0a14;
   border: 2px solid #222;
-  min-height: 152px;
+  height: var(--ui-height);
+  min-height: 0;
+  flex: 0 0 var(--ui-height);
   position: relative;
+  overflow: hidden;
 }
 
 #verbs {
   display: grid;
-  grid-template-columns: repeat(3, 150px);
-  grid-auto-rows: 40px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  flex: 0 0 58%;
+  max-width: 470px;
   gap: 6px;
   padding: 10px;
 }
@@ -57,13 +89,31 @@ canvas.hot { cursor: pointer; }
   font-weight: bold;
   cursor: pointer;
   font-family: inherit;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
 }
 .verb:hover { color: #aaffaa; }
 .verb.sel { background: #1d2c1d; color: #fff; border-color: #54c854; }
 
-#inv { flex: 1; padding: 10px; border-left: 1px solid #1c1c2a; }
+#inv {
+  flex: 1;
+  min-width: 0;
+  padding: 10px;
+  border-left: 1px solid #1c1c2a;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 #invTitle { color: #666; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; }
-#invItems { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+#invItems {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+  overflow-y: auto;
+  min-height: 0;
+}
 
 .item {
   background: #190f22;
@@ -74,6 +124,7 @@ canvas.hot { cursor: pointer; }
   font-weight: bold;
   cursor: pointer;
   font-family: inherit;
+  min-width: 0;
 }
 .item:hover { color: #eeccff; }
 .item.sel { color: #fff; border-color: #cc99ff; background: #2a1a3a; }
@@ -148,7 +199,12 @@ canvas.hot { cursor: pointer; }
   flex-direction: column;
   gap: 4px;
   width: 250px;
+  max-height: calc(100% - 16px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #b33 rgba(10, 10, 20, 0.5);
 }
+#debug button { flex-shrink: 0; }
 #debugTitle { color: #ff6655; font-size: 11px; letter-spacing: 3px; font-weight: bold; }
 #debug button {
   background: #1a1212;
@@ -161,3 +217,113 @@ canvas.hot { cursor: pointer; }
   font-family: inherit;
 }
 #debug button:hover { color: #fff; border-color: #fa8; }
+
+@media (max-width: 700px), (max-height: 560px) {
+  :root {
+    --page-pad: 6px;
+    --sentence-height: 24px;
+    --ui-height: 124px;
+  }
+
+  #sentence { font-size: 14px; }
+
+  #verbs {
+    flex-basis: 58%;
+    gap: 4px;
+    padding: 6px;
+  }
+
+  .verb {
+    font-size: clamp(11px, 3.2vw, 14px);
+  }
+
+  #inv { padding: 6px; }
+  #invTitle { font-size: 9px; letter-spacing: 2px; }
+  #invItems { gap: 4px; margin-top: 5px; }
+
+  .item {
+    padding: 5px 7px;
+    font-size: 12px;
+  }
+
+  #choices {
+    padding: 8px 10px;
+    gap: 4px;
+  }
+
+  .choice {
+    font-size: 13px;
+    line-height: 1.18;
+  }
+
+  .overlay { padding: 16px; }
+  .overlay h1 { font-size: 24px; }
+  .overlay h2 { font-size: 13px; margin-bottom: 10px; }
+  .overlay p { font-size: 13px; line-height: 1.35; margin: 5px 0; }
+  .overlay p.hint { font-size: 11px; }
+  .overlay p.verse { font-size: 16px; }
+  .overlay button {
+    margin-top: 12px;
+    font-size: 15px;
+    padding: 8px 18px;
+  }
+
+  #debug {
+    width: min(220px, calc(100% - 16px));
+    max-height: calc(100% - 16px);
+    overflow-y: auto;
+  }
+
+  #debug button {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+}
+
+@media (max-width: 380px) {
+  #verbs { flex-basis: 62%; }
+  .verb { font-size: 11px; }
+  #invTitle { display: none; }
+  #invItems { margin-top: 0; }
+  .item { font-size: 11px; padding: 4px 5px; }
+}
+
+@media (max-height: 480px) {
+  :root {
+    --page-pad: 4px;
+    --sentence-height: 20px;
+    --ui-height: 108px;
+  }
+
+  #sentence { font-size: 12px; }
+
+  #verbs {
+    gap: 3px;
+    padding: 4px;
+  }
+
+  .verb {
+    font-size: 12px;
+  }
+
+  #inv { padding: 4px; }
+  #invTitle { display: none; }
+  #invItems { margin-top: 0; gap: 3px; }
+  .item { font-size: 11px; padding: 4px 5px; }
+
+  #choices { padding: 6px 8px; }
+  .choice { font-size: 12px; }
+
+  .overlay { padding: 10px; }
+  .overlay h1 { font-size: 20px; margin-bottom: 2px; }
+  .overlay h2 { font-size: 12px; margin-bottom: 6px; }
+  .overlay p { font-size: 12px; line-height: 1.25; margin: 3px 0; }
+  .overlay p.intro,
+  .overlay p.hint { display: none; }
+  .overlay p.verse { font-size: 14px; }
+  .overlay button {
+    margin-top: 8px;
+    font-size: 14px;
+    padding: 6px 16px;
+  }
+}

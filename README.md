@@ -1,10 +1,10 @@
-# ⭐ Ein Stern über Bethlehem — Kapitel 1–6
+# ⭐ Ein Stern über Bethlehem — Kapitel 1–15
 
 Ein Point-&-Click-Adventure im Stil von *Monkey Island* (SCUMM-Verben, Inventar,
-Dialog-Bäume), das die Geschichte der Evangelien erzählt. Kapitel 1 folgt dem
-Lukas-Evangelium: **Lukas 1** als Prolog (Zacharias, Maria) und **Lukas 2**
-als spielbare Handlung — die Hirten auf dem Feld, der Stern, der Engel und die
-Krippe in Bethlehem.
+Dialog-Bäume), das die Geschichte der Evangelien aus Joels Perspektive erzählt.
+Der Anfang folgt dem Lukas-Evangelium: **Lukas 1** als Prolog (Zacharias,
+Maria) und **Lukas 2** als spielbare Handlung — die Hirten auf dem Feld, der
+Stern, der Engel und die Krippe in Bethlehem.
 
 ## Starten
 
@@ -140,6 +140,215 @@ von Jesus hat sich in der ganzen Gegend verbreitet (Lukas 4,37).
 Mithilfe beim Netzewaschen und Anschieben sind erzählerische Rahmung; Ablauf
 und wörtliche Rede des Fischzugs folgen Lukas 5,1–11.
 
+## Kapitel 7: Der Gelähmte durchs Dach (Lukas 5,17–26)
+
+Nach dem Fischzug folgen Joel und Levi Jesus weiter nach **Kapernaum**. In einem
+Haus lehrt Jesus, während Pharisäer und Gesetzeslehrer aus Galiläa, Judäa und
+Jerusalem dabeisitzen (Lukas 5,17).
+
+- Vor der Tür: eine gedrängte Menge, kein Durchkommen — und vier Freunde, die
+  einen gelähmten Mann auf einer Liege zu Jesus bringen wollen.
+- Joel hilft mit einer **Leiter**, festen **Seilen** und seinem alten
+  **Hirtenstab**, um die Dachziegel zu lösen. So wird aus dem Dach der einzige
+  Weg zu Jesus.
+- Die Cutscene folgt Lukas 5,19–26: Die Liege wird durch die Ziegel
+  hinabgelassen, Jesus sieht ihren Glauben, spricht Vergebung zu, stellt sich
+  dem Einwand der Schriftgelehrten — und gebietet dem Mann, aufzustehen und
+  seine Liege zu nehmen.
+- Joels Blick verbindet die Wunder: Stern, Engel, Fischzug — und nun ein Mann,
+  der auf eigenen Füßen Gott lobt.
+
+*Hinweis zur biblischen Einordnung:* Die vier Freunde, die versperrte Tür, das
+Dach und Jesu Worte folgen Lukas 5,17–26. Joels konkrete Mithilfe mit Leiter,
+Seilen und Hirtenstab ist erzählerische Rahmung, damit die Episode als
+Point-&-Click-Szene spielbar wird.
+
+## Kapitel 8: Levi der Zöllner (Lukas 5,27–32)
+
+Direkt danach geht Jesus hinaus und bleibt an einem **Zollhaus in Kapernaum**
+stehen. Dort sitzt ein Zöllner namens Levi — nicht Joels alter Hirtenfreund,
+sondern ein Mann am Tisch Roms.
+
+- Joels Perspektive trägt die Szene: Nach Volkszählung, Soldaten und Flucht
+  hat er gute Gründe, bei Zöllnern innerlich zuzumachen. Genau diese Grenze
+  wird nun geprüft.
+- Jesus ruft Levi mit einem einzigen Satz: **„Folge mir nach!"** Der Zöllner
+  lässt Münzen, Tafel und Zolltisch zurück (Lukas 5,27–28).
+- Levi will ein großes Mahl geben und bittet Joel, die Einladung ausgerechnet
+  seinen alten Zöllnerkollegen zu bringen. Das kleine Point-&-Click-Ziel ist
+  also kein Gegenstandsrätsel, sondern ein Schritt über Joels eigene Abwehr.
+- Beim Fest sitzen Jesus, Levi, viele Zöllner und andere am Tisch (Lukas 5,29).
+  Die Pharisäer und Schriftgelehrten murren — und Jesus antwortet mit dem
+  Arztwort aus Lukas 5,31–32.
+
+*Hinweis zur biblischen Einordnung:* Ruf, Zurücklassen, Mahl, Murren und Jesu
+Antwort folgen Lukas 5,27–32. Dass Joel die Einladung überbringt, ist
+erzählerische Rahmung, damit die Berufung des Zöllners aus Joels Blickwinkel
+spielbar und innerlich nachvollziehbar wird.
+
+## Kapitel 9: Der Bräutigam und die neuen Schläuche (Lukas 5,33–39)
+
+Das Fest bei Levi ist noch nicht vorbei, und die nächste Frage kommt direkt aus
+dem Raum: Warum fasten Jesu Jünger nicht wie die Jünger des Johannes oder der
+Pharisäer?
+
+- Joel untersucht einen **alten** und einen **neuen Weinschlauch**. Als Hirte
+  kennt er Leder und versteht: Alter, spröder Schlauch hält jungen, arbeitenden
+  Wein nicht aus.
+- Jesu Antwort folgt Lukas 5,34–39: Bräutigam, Fastenzeit, neuer Flicken auf
+  altem Kleid, neuer Wein in neuen Schläuchen.
+- Für Joel wird das Bild persönlich: Er merkt, dass Gott nicht nur einzelne
+  Wunder tut, sondern alte Denkformen dehnt — auch seine eigenen.
+
+*Hinweis zur biblischen Einordnung:* Die Frage nach dem Fasten und Jesu
+Bildworte folgen Lukas 5,33–39. Das Untersuchen der Weinschläuche ist die
+spielerische Rahmung, damit Joels Verstehen nicht nur erzählt, sondern
+erklickt wird.
+
+## Kapitel 10: Ähren am Sabbat (Lukas 6,1–5)
+
+Am nächsten Sabbat führt der Weg durch ein Kornfeld. Die Jünger sind hungrig,
+und die Pharisäer beobachten genau.
+
+- Joel pflückt **reife Ähren** und reibt sie zwischen den Händen aus, damit die
+  Jünger ein paar Körner essen können (Lukas 6,1).
+- Darauf folgt die Frage: Warum tun sie, was am Sabbat nicht erlaubt ist?
+- Jesus antwortet mit Davids Hunger und den Schaubroten (Lukas 6,3–4) und
+  schließt: **„Der Menschensohn ist Herr über den Sabbat."** (Lukas 6,5)
+- Für Joel wird die Sabbatfrage konkret: Gottes Ruhe übersieht den Hunger nicht.
+
+*Hinweis zur biblischen Einordnung:* Ährenpflücken, Ausreiben, Einwand der
+Pharisäer, Davids Beispiel und Jesu Schlusssatz folgen Lukas 6,1–5. Dass Joel
+selbst die Ähren pflückt und ausreibt, macht die Szene aus seiner Perspektive
+spielbar.
+
+## Kapitel 11: Die verdorrte Hand (Lukas 6,6–11)
+
+An einem anderen Sabbat lehrt Jesus in der **Synagoge von Kapernaum** — und am
+Rand sitzt ein Mann, dessen rechte Hand verdorrt ist (Lukas 6,6).
+
+- Joel setzt sich zu dem Mann, zu dem sich sonst niemand setzt: Im Gespräch
+  erzählt der frühere **Steinmetz** von der Hand, die nichts mehr hält, von
+  den Blicken der Leute — und davon, dass er sich das Hoffen verbietet.
+- Ein Blick auf die **erste Reihe** zeigt, was wirklich los ist: „Sie lauerten
+  darauf, ob er am Sabbat heile, um einen Grund zur Anklage zu finden."
+  (Lukas 6,7)
+- Auf dem freien Platz beginnt die Cutscene, Vers für Vers nach Lukas:
+  „Steh auf und stell dich in die Mitte!" (6,8), die Frage an alle —
+  **„Ist es am Sabbat erlaubt, Gutes zu tun oder Böses?"** (6,9), der Blick
+  in die Runde, „Streck deine Hand aus!" — und die Hand ist wiederhergestellt
+  (6,10).
+- Der dunkle Schluss bleibt stehen: Sie beraten, was sie Jesus antun könnten
+  (6,11). Zum ersten Mal hat Joel Angst — nicht vor ihm, sondern **um** ihn.
+
+*Hinweis zur biblischen Einordnung:* Sabbat, Synagoge, der Mann mit der
+verdorrten rechten Hand, das Lauern, Jesu Frage und die Heilung folgen
+Lukas 6,6–11. Joels Gespräch mit dem Mann (samt Beruf Steinmetz) ist
+erzählerische Rahmung.
+
+## Kapitel 12: Die Zwölf (Lukas 6,12–19)
+
+Ein Nachtlager am Fuß eines Berges: Oben kniet Jesus und betet — **die ganze
+Nacht** (Lukas 6,12). Unten kann keiner schlafen, außer denen, die schnarchen.
+
+- **Kreisschluss zu Kapitel 1:** Das Lagerfeuer ist fast aus — Joel sammelt
+  Reisig am Hang und weckt die Glut. Vierzig Jahre später funktioniert der
+  Trick immer noch („Schimon, das war für dich").
+- **Simon am Feuer:** Er kann nicht schlafen — morgen wählt Jesus zwölf aus,
+  „und wenn er mich nicht nimmt?" Joels Antwort: „Er hat aus DEINEM Boot
+  gepredigt. Beruhig dich."
+- **Morgen-Cutscene** (Lukas 6,13–16): Die Dämmerung zieht animiert herauf,
+  Jesus kommt den Hang herab und nennt die zwölf Namen — wörtlich nach Lukas,
+  inklusive des Erzähler-Nachsatzes „…der zum Verräter wurde" (6,16), der
+  Joels Angst aus Kapitel 11 leise weiterträgt.
+- **Der Herzmoment:** Bei „Matthäus" zuckt der alte Levi kurz zusammen — und
+  Joel begreift: Der Zöllner Levi heißt jetzt Matthäus. Berufen wird nicht
+  nach Verdienst, sondern nach Ruf.
+- Schluss: der Abstieg in die Ebene, wo schon die Menge wartet
+  (Lukas 6,17–19) — das Setting für die Feldrede steht bereit.
+
+*Hinweis zur biblischen Einordnung:* Nachtgebet, Wahl und Namen der Zwölf und
+der Abstieg in die Ebene folgen Lukas 6,12–19. Das Nachtlager mit Feuerwache
+und Simons Unruhe ist erzählerische Rahmung.
+
+## Kapitel 13: Die Feldrede (Lukas 6,20–49)
+
+Unten in der **Ebene** wartet die Menge — aus ganz Judäa, Jerusalem und vom
+Küstenland (Lukas 6,17–18). Jesus steht auf einem flachen Feldstein, die
+frischgebackenen Zwölf um ihn herum.
+
+- **Aufgabe 1 — direkt aus Lukas 6,19:** Eine alte, gebeugte Witwe kommt nicht
+  durch die Menge. Joel bahnt ihr den Weg („Platz da! Eine Mutter Israels
+  will durch!") — sie berührt ihn, und „es ging eine Kraft von ihm aus und
+  heilte alle". Vierzig Jahre krummer Rücken: fort.
+- **Aufgabe 2 — Wiedersehen:** Der geheilte **Steinmetz aus Kapitel 11** ist
+  Jesus quer durch Galiläa nachgereist — „Er hat mir die Hand wiedergegeben.
+  Das Mindeste ist, dass ich ihm auch zuhöre."
+- **Die Feldrede** als Cutscene mit ausgewählten Worten, wörtlich nach Lukas:
+  die Seligpreisungen (6,20–21), die Feindesliebe (6,27–28), die Goldene Regel
+  (6,31), Splitter und Balken (6,41 — Levi: „Du hast da übrigens wirklich
+  etwas im Auge") und das Haus auf dem Felsen (6,47–49) — mit dem Fachurteil
+  des Steinmetzen: „ENDLICH redet einer, der vom Bauen versteht!"
+- Joels Perspektive trägt die Szene: „Selig, ihr Armen" — er fängt bei uns an.
+
+*Hinweis zur biblischen Einordnung:* Schauplatz, Heilungen und alle
+Predigtworte folgen Lukas 6,17–49 (in Auswahl). Witwe und Steinmetz sind
+erzählerische Rahmung.
+
+## Kapitel 14: Der Hauptmann von Kapernaum (Lukas 7,1–10)
+
+Zurück in **Kapernaum**: Vor einem stattlichen Haus mit römischem Ziegeldach
+läuft ein Hauptmann auf und ab — drinnen liegt sein Knecht im Sterben
+(Lukas 7,2). Lukas erzählt diese Geschichte direkt nach der Feindesliebe-
+Predigt, und genau das ist Joels Kapitel:
+
+- **Aufgabe 1 — die eigene Schwelle:** Joel, der seit Bethlehem einen Bogen
+  um Soldaten macht („Liebt eure Feinde. Gestern klang das einfacher."),
+  spricht den Römer an. Im Dialog: der Knecht „mehr Sohn als Diener", die
+  Befehlsgewalt, die dem Tod nichts befehlen kann, die selbst bezahlte
+  Synagoge — und sein „Ich bin nicht würdig."
+- **Aufgabe 2 — die Ältesten:** Sie gehen für ihn zu Jesus: „Er liebt unser
+  Volk und hat uns die Synagoge gebaut." (Lukas 7,4–5)
+- **Cutscene** Vers für Vers: Jesus kommt mit; der Freund überbringt die
+  Botschaft — „Sprich nur ein Wort, und mein Diener wird gesund" samt dem
+  Soldaten-Gleichnis (7,6–8); Jesus **staunt**: „Einen solchen Glauben habe
+  ich nicht einmal in Israel gefunden." (7,9); der Knecht steht gesund in
+  der Tür (7,10).
+- Joels Schluss mit Kapitel-2-Callback: „Diesmal hat es nicht einmal einen
+  Weinkrug gebraucht."
+
+*Hinweis zur biblischen Einordnung:* Hauptmann, Knecht, Älteste, Freunde,
+Botschaft und Jesu Staunen folgen Lukas 7,1–10. Joels Gespräch mit dem
+Hauptmann ist erzählerische Rahmung — bei Lukas handelt der Hauptmann
+durchgehend über Boten, was das Spiel beibehält: Auch hier kommt er Jesus
+nie selbst gegenüber.
+
+## Kapitel 15: Der Jüngling zu Nain (Lukas 7,11–17)
+
+Vor dem **Stadttor von Nain** begegnen sich zwei Züge: Jesus mit seiner
+großen Begleitung — und ein Trauerzug, der den einzigen Sohn einer Witwe
+zu Grabe trägt (Lukas 7,11–12).
+
+- Ein bewusst **leises Kapitel**: keine Gegenstandsrätsel, sondern zwei
+  Aufgaben aus Anstand. Joel bringt die noch vom Vortag jubelnde **Menge zur
+  Stille** („Wer jubeln will, jubelt später") und erfährt von den **Trägern**
+  die Geschichte: der einzige Sohn, die Witwe, niemand mehr, der bleibt.
+- Die Witwe selbst spricht Joel nicht an: „Es gibt Augenblicke, da ist
+  Schweigen der einzige Anstand."
+- **Cutscene** Vers für Vers: „Weine nicht!" (7,13), die berührte Bahre, die
+  stehenbleibenden Träger (7,14), **„Jüngling, ich sage dir: Steh auf!"** —
+  der Tote setzt sich auf, spricht, und Jesus gibt ihn seiner Mutter zurück
+  (7,15). Furcht und Lobpreis der Menge: „Ein großer Prophet ist unter uns
+  aufgetreten!" (7,16).
+- Joels Schlussgedanke: „Mein Leben lang dachte ich: Der Tod hat immer das
+  letzte Wort. Heute hat ihm einer ins Wort geredet." Und Levi, der Schimon
+  und seine Frau begraben hat, weiß nicht, ob er weinen oder singen soll —
+  „Beides, alter Freund. Heute geht beides."
+
+*Hinweis zur biblischen Einordnung:* Ort, Begegnung der Züge, alle Worte Jesu
+und die Reaktion der Menge folgen Lukas 7,11–17. Der Name des Jünglings (Asa)
+und die Gespräche mit Trägern und Menge sind erzählerische Rahmung.
+
 ## Technik
 
 - Reines HTML/CSS/JavaScript, eine einzige Canvas-Szene pro Raum, keine Abhängigkeiten.
@@ -147,22 +356,26 @@ und wörtliche Rede des Fischzugs folgen Lukas 5,1–11.
   und die Räume `feldtag` (Hirtenfeld am Nachmittag), `field` (Hirtenfeld bei
   Nacht), `city` (Bethlehem bei Nacht), `stable` (Stall), `flucht` (Flucht nach
   Ägypten), `aegypten` (Oase mit Pyramiden), `nazaret` (Weide vor Nazaret),
-  `synagoge` (Synagoge von Nazaret) und `see` (See Gennesaret). Neue Kapitel
-  lassen sich als weitere Einträge in `rooms` ergänzen.
+  `synagoge` (Synagoge von Nazaret), `see` (See Gennesaret), `haus` (Haus in
+  Kapernaum), `zollhaus` (Zollhaus und Festmahl in Kapernaum), `sabbatfeld`
+  (Kornfeld am Sabbat), `synagoge2` (Synagoge von Kapernaum), `berg`
+  (Nachtlager am Berg), `ebene` (Feldrede in der Ebene), `kapernaum`
+  (Straße vor dem Haus des Hauptmanns) und `nain` (vor dem Stadttor von
+  Nain). Neue Kapitel lassen sich als weitere Einträge in `rooms` ergänzen.
 
 ## Debug-Modus
 
 In `config.json` steht ein Schalter:
 
 ```json
-{ "debug": true }
+{ "debug": false }
 ```
 
-Ist er `true`, erscheint links oben ein **Debug-Panel**, mit dem man direkt in
+Setzt man ihn auf `true`, erscheint links oben ein **Debug-Panel**, mit dem man direkt in
 jede Szene springen kann (inklusive passender Flags und Inventar) — z. B.
 „Feld: Stern- & Engel-Cutscene“, „Stadt: Weg zum Stall bekannt“,
 „Stall: Finale“ oder „Kapitel 3: Abend (Marias Erzählung)“. Für den normalen
-Spielbetrieb einfach auf `false` setzen.
+Spielbetrieb bleibt der Wert auf `false`.
 
 **Wichtig bei Doppelklick-Start (`file://`):** Browser dürfen dort aus
 Sicherheitsgründen keine JSON-Dateien nachladen — die `config.json` wird dann
@@ -174,6 +387,5 @@ ignoriert. Zwei Auswege:
 
 ## Geplante Fortsetzung
 
-Kapitel 7: *Der Gelähmte durchs Dach* (Lukas 5,17–26). Danach angedacht:
-*Das verlorene Schaf* (Lukas 15,1–7) und als Finale *Jerusalem & Emmaus*
-(Lukas 19; 24,13–35).
+Kapitel 16: *Das verlorene Schaf* (Lukas 15,1–7). Danach als Finale:
+*Jerusalem & Emmaus* (Lukas 19; 24,13–35).
