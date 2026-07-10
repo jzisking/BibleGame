@@ -1,4 +1,4 @@
-# ⭐ Ein Stern über Bethlehem — Kapitel 1–15
+# ⭐ Ein Stern über Bethlehem — Kapitel 1–19
 
 Ein Point-&-Click-Adventure im Stil von *Monkey Island* (SCUMM-Verben, Inventar,
 Dialog-Bäume), das die Geschichte der Evangelien aus Joels Perspektive erzählt.
@@ -349,6 +349,88 @@ zu Grabe trägt (Lukas 7,11–12).
 und die Reaktion der Menge folgen Lukas 7,11–17. Der Name des Jünglings (Asa)
 und die Gespräche mit Trägern und Menge sind erzählerische Rahmung.
 
+## Kapitel 16: Die Boten des Johannes (Lukas 7,18–35)
+
+Direkt nach Nain erreicht die Nachricht auch die Jünger des Johannes. Johannes
+sitzt im Gefängnis des Herodes und schickt zwei Boten zu Jesus: „Bist du der,
+der kommen soll, oder sollen wir auf einen anderen warten?" (Lukas 7,19)
+
+- Joel hilft den Boten, nicht nur eine Antwort zu hören, sondern die Zeichen zu
+  sehen: Ein blinder Mann findet durch die Menge zu Jesus, und die Armen am Rand
+  werden näher herangelassen.
+- Die Antwort folgt Lukas 7,22–23: Blinde sehen, Lahme gehen, Aussätzige werden
+  rein, Taube hören, Tote stehen auf, und den Armen wird das Evangelium verkündet.
+- Danach spricht Jesus vor der Menge über Johannes: kein schwankendes Rohr,
+  sondern mehr als ein Prophet, der den Weg bereitet hat (Lukas 7,24–28).
+- Joels Blick bindet Nain zurück an die Frage: Das auferweckte Leben war nicht
+  das Ende der Antwort, sondern eines der Zeichen, die Johannes hören soll.
+
+*Hinweis zur biblischen Einordnung:* Johannes' Frage, Jesu Antwort und Jesu
+Worte über Johannes folgen Lukas 7,18–35. Der blinde Mann, die Armen am Rand und
+Joels Mithilfe sind spielerische Rahmung, damit die Antwort „gesehen und gehört"
+werden kann.
+
+## Kapitel 17: Die Sünderin im Haus des Pharisäers (Lukas 7,36–50)
+
+Jesus nimmt die Einladung des Pharisäers Simon an. Joel entdeckt im Haus drei
+bewusst ausgelassene Zeichen der Gastfreundschaft: kein Wasser für Jesu Füße,
+kein Begrüßungskuss und kein Salböl.
+
+- Eine in der Stadt als Sünderin bekannte Frau kommt mit einem Alabastergefäß.
+  Mit ihren Tränen, ihren Küssen und dem Öl gibt sie genau das im Überfluss, was
+  Simon seinem Gast vorenthalten hat (Lukas 7,37–38).
+- Jesu Gleichnis von den zwei Schuldnern folgt Lukas 7,41–43: Beiden wird eine
+  unbezahlbare Schuld erlassen, und derjenige liebt mehr, dem mehr erlassen wurde.
+- Jesus stellt Simons distanzierten Empfang der Liebe der Frau gegenüber und
+  spricht ihr Vergebung zu. Das Kapitel endet mit: „Dein Glaube hat dich gerettet.
+  Geh in Frieden!" (Lukas 7,50)
+
+*Hinweis zur biblischen Einordnung:* Einladung, Salbung, Simons Gedanken, das
+Gleichnis und Jesu Worte folgen Lukas 7,36–50. Joels Suche nach den drei fehlenden
+Zeichen der Gastfreundschaft macht Jesu späteren Vergleich spielerisch sichtbar,
+ohne das Handeln der Frau zu ersetzen.
+
+## Kapitel 18: Das Gleichnis vom Sämann (Lukas 8,1–15)
+
+Jesus zieht mit den Zwölf von Stadt zu Stadt. Maria Magdalena, Johanna, Susanna
+und weitere Frauen begleiten und unterstützen die Gemeinschaft mit dem, was sie
+besitzen (Lukas 8,1–3). Am Rand eines Feldes versammelt sich eine große Menge.
+
+- Joel nimmt Saatkörner aus dem Beutel eines Sämanns und verteilt sie auf vier
+  klar unterscheidbare Flächen: den harten Weg, felsigen Boden, einen von Dornen
+  durchzogenen Boden und gute Erde.
+- Jede Fläche zeigt das Ergebnis aus Lukas 8,5–8: Vögel nehmen die Saat vom Weg,
+  Halme verdorren über dem Fels, Dornen ersticken das Wachstum und der gute Boden
+  bringt hundertfache Frucht.
+- Nachdem alle vier Böden besät sind, fragen die Jünger nach der Bedeutung. Jesu
+  Erklärung aus Lukas 8,11–15 verbindet den Samen mit dem Wort Gottes und die
+  Böden mit den verschiedenen Arten, es zu hören und zu bewahren.
+
+*Hinweis zur biblischen Einordnung:* Reisegemeinschaft, Gleichnis und Erklärung
+folgen Lukas 8,1–15. Dass Joel beim Ausstreuen hilft und die Folgen unmittelbar
+vor Augen sieht, ist die spielerische Rahmung des Kapitels.
+
+## Kapitel 19: Die Stillung des Sturms (Lukas 8,16–25)
+
+Ein kurzer chronologischer Übergang greift Jesu Worte von der Lampe und vom
+richtigen Hören sowie die Begegnung mit seiner Mutter und seinen Brüdern auf
+(Lukas 8,16–21). Danach steigen Jesus und die Jünger in ein Boot, um den See zu
+überqueren.
+
+- Während Jesus schläft, fällt ein Sturmwind auf den See. Der Himmel verdunkelt
+  sich, Regen und Gischt ziehen über das Boot, das sichtbar mit Wasser vollläuft.
+- Joel sichert das schlagende Segel und schöpft Wasser. Beide Aufgaben schaffen
+  den Jüngern einen Weg zu Jesus, können den Sturm selbst aber nicht bezwingen.
+- Simon und die Jünger wecken Jesus mit dem Ruf: „Meister, Meister, wir gehen
+  zugrunde!" Jesus bedroht Wind und Wellen; die animierte See wird vollkommen
+  ruhig (Lukas 8,24).
+- Das Kapitel endet mit Jesu Frage „Wo ist euer Glaube?" und dem Staunen der
+  Jünger darüber, dass ihm sogar Wind und Wasser gehorchen (Lukas 8,25).
+
+*Hinweis zur biblischen Einordnung:* Überfahrt, Sturm, Hilferuf, Stillung und
+Reaktion folgen Lukas 8,22–25. Joels Arbeit an Segel und Wasser ist spielerische
+Rahmung; geweckt wird Jesus weiterhin von den Jüngern.
+
 ## Technik
 
 - Reines HTML/CSS/JavaScript, eine einzige Canvas-Szene pro Raum, keine Abhängigkeiten.
@@ -361,7 +443,10 @@ und die Gespräche mit Trägern und Menge sind erzählerische Rahmung.
   (Kornfeld am Sabbat), `synagoge2` (Synagoge von Kapernaum), `berg`
   (Nachtlager am Berg), `ebene` (Feldrede in der Ebene), `kapernaum`
   (Straße vor dem Haus des Hauptmanns) und `nain` (vor dem Stadttor von
-  Nain). Neue Kapitel lassen sich als weitere Einträge in `rooms` ergänzen.
+  Nain), `johannesfrage` (die Boten des Johannes), `pharisaeerhaus` (die
+  Sünderin im Haus des Pharisäers), `saemannfeld` (das Gleichnis vom Sämann)
+  sowie `sturmsee` (die Stillung des Sturms). Neue Kapitel lassen sich als
+  weitere Einträge in `rooms` ergänzen.
 
 ## Debug-Modus
 
@@ -387,5 +472,4 @@ ignoriert. Zwei Auswege:
 
 ## Geplante Fortsetzung
 
-Kapitel 16: *Das verlorene Schaf* (Lukas 15,1–7). Danach als Finale:
-*Jerusalem & Emmaus* (Lukas 19; 24,13–35).
+Kapitel 20: *Der Mann im Gebiet der Gerasener* (Lukas 8,26–39).
