@@ -1,7 +1,7 @@
 'use strict';
 
 /* ============================================================
-   EIN STERN ÜBER BETHLEHEM – Kapitel 1–19
+   EIN STERN ÜBER BETHLEHEM – Kapitel 1–20
    Ein Point-&-Click-Adventure nach Lukas 1–8 und Matthäus 2
    ============================================================ */
 
@@ -162,6 +162,15 @@ const F = {              // Story-Flags
   sturmWasserGeschoepft: false,
   sturmJuengerBereit: false,
   sturmGestillt: false,
+  gerasaAngekommen: false,
+  mannBefreit: false,
+  schweineFort: false,
+  hirtenBerichten: false,
+  mantelGenommen: false,
+  mantelGegeben: false,
+  mannAngehoert: false,
+  bewohnerDa: false,
+  mannGesandt: false,
   ended: false,
 };
 
@@ -179,6 +188,7 @@ const fx = {             // animierte Werte
   mitte: 0,           // 0 = am Rand, 1 = in der Mitte (Raum 'synagoge2', Lukas 6,8)
   morgen: 0,          // 0 = Nacht, 1 = Morgen (Raum 'berg', Lukas 6,13)
   sturm: 0,           // 0 = ruhiger See, 1 = voller Sturm (Raum 'sturmsee')
+  schweineLauf: 0,    // 0 = Herde am Hang, 1 = im See (Raum 'gerasenerland')
   fade: 0,
 };
 
@@ -222,6 +232,7 @@ const ITEMS = {
   einladung: { name: 'Einladung', look: 'Levis Einladung zum Mahl. Ein kleiner Wachstafel-Zettel mit erstaunlich viel Mut darauf.' },
   aehren: { name: 'Ähren', look: 'Ein paar reife Ähren vom Feldrand. Zwischen den Händen gerieben werden daraus Körner – einfache Nahrung für müde Wanderer.' },
   samen: { name: 'Saatkörner', look: 'Eine Handvoll Saatkörner aus dem Beutel des Sämanns. In jedem steckt eine Möglichkeit – wenn der Boden sie aufnimmt.' },
+  mantel: { name: 'Reisemantel', look: 'Ein sauberer Reisemantel aus dem Boot. Schlicht, warm und groß genug, um einem Menschen wieder Würde zu geben.' },
 };
 
 function addItem(id)    { state.inventory.push(id); renderInv(); }
@@ -291,7 +302,7 @@ function updateSentence() {
 
 const ACTORS = {
   joel:     { color: '#f2f2f2', pos: () => [player.x, player.y - 128] },
-  levi:     { color: '#b8e070', pos: () => state.room === 'sturmsee' ? [350, 350] : state.room === 'saemannfeld' ? [120, 390] : state.room === 'nain' ? [320, 392] : state.room === 'kapernaum' ? [150, 392] : state.room === 'ebene' ? [250, 390] : state.room === 'berg' ? [180, 395] : state.room === 'sabbatfeld' ? [232, 382] : state.room === 'zollhaus' ? [220, 380] : state.room === 'haus' ? [825, 380] : state.room === 'see' ? [840, 382] : (state.room === 'synagoge' || state.room === 'synagoge2') ? [215, 380] : (state.room === 'field' || state.room === 'feldtag') ? [468, 365] : state.room === 'weg' ? [560, 370] : state.room === 'city' ? [190, 372] : [225, 390] },
+  levi:     { color: '#b8e070', pos: () => state.room === 'gerasenerland' ? [200, 390] : state.room === 'sturmsee' ? [350, 350] : state.room === 'saemannfeld' ? [120, 390] : state.room === 'nain' ? [320, 392] : state.room === 'kapernaum' ? [150, 392] : state.room === 'ebene' ? [250, 390] : state.room === 'berg' ? [180, 395] : state.room === 'sabbatfeld' ? [232, 382] : state.room === 'zollhaus' ? [220, 380] : state.room === 'haus' ? [825, 380] : state.room === 'see' ? [840, 382] : (state.room === 'synagoge' || state.room === 'synagoge2') ? [215, 380] : (state.room === 'field' || state.room === 'feldtag') ? [468, 365] : state.room === 'weg' ? [560, 370] : state.room === 'city' ? [190, 372] : [225, 390] },
   schimon:  { color: '#ffb060', pos: () => state.room === 'feldtag' ? [295, 370] : state.room === 'field' ? [295, 398] : state.room === 'weg' ? [462, 374] : state.room === 'city' ? [135, 370] : [150, 412] },
   wirt:     { color: '#ff9a8a', pos: () => [530, 200] },
   waechter: { color: '#c8b8ff', pos: () => [722, 378] },
@@ -303,9 +314,9 @@ const ACTORS = {
   rahel:    { color: '#ffb8d0', pos: () => [540, 372] },
   eli:      { color: '#d8d870', pos: () => [720, 378] },
   mirjam:   { color: '#a0e8d8', pos: () => [280, 425] },
-  jesus:    { color: '#ffe8b0', pos: () => state.room === 'sturmsee' ? [710, 330] : state.room === 'saemannfeld' ? [560, 300] : state.room === 'pharisaeerhaus' ? [610, 390] : state.room === 'nain' ? [250, 372] : state.room === 'kapernaum' ? [300, 372] : state.room === 'ebene' ? [480, 332] : state.room === 'berg' ? (F.jesusUnten ? [620, 372] : [790, 140]) : state.room === 'sabbatfeld' ? [640, 350] : state.room === 'zollhaus' ? (F.gaesteEingeladen ? [540, 350] : F.zoellnerCalled ? [705, 360] : [420, 365]) : state.room === 'haus' ? [505, 286] : state.room === 'see' ? (fx.boot > 0 ? [640 - fx.boot * 140, 310 - fx.boot * 55] : [255, 375]) : [480, 240] },
+  jesus:    { color: '#ffe8b0', pos: () => state.room === 'gerasenerland' ? [500, 350] : state.room === 'sturmsee' ? [710, 330] : state.room === 'saemannfeld' ? [560, 300] : state.room === 'pharisaeerhaus' ? [610, 390] : state.room === 'nain' ? [250, 372] : state.room === 'kapernaum' ? [300, 372] : state.room === 'ebene' ? [480, 332] : state.room === 'berg' ? (F.jesusUnten ? [620, 372] : [790, 140]) : state.room === 'sabbatfeld' ? [640, 350] : state.room === 'zollhaus' ? (F.gaesteEingeladen ? [540, 350] : F.zoellnerCalled ? [705, 360] : [420, 365]) : state.room === 'haus' ? [505, 286] : state.room === 'see' ? (fx.boot > 0 ? [640 - fx.boot * 140, 310 - fx.boot * 55] : [255, 375]) : [480, 240] },
   simon:    { color: '#8ad8f0', pos: () => state.room === 'sturmsee' ? [560, 350] : state.room === 'ebene' ? [600, 372] : state.room === 'berg' ? [520, 372] : fx.boot > 0 ? [640 - fx.boot * 140 + 30, 320 - fx.boot * 55] : [520, 380] },
-  menge:    { color: '#e0c8ff', pos: () => state.room === 'nain' ? [120, 392] : state.room === 'ebene' ? [200, 392] : state.room === 'sabbatfeld' ? [440, 390] : state.room === 'zollhaus' ? [430, 380] : state.room === 'haus' ? [430, 372] : state.room === 'see' ? [210, 395] : [700, 380] },
+  menge:    { color: '#e0c8ff', pos: () => state.room === 'gerasenerland' ? [770, 390] : state.room === 'nain' ? [120, 392] : state.room === 'ebene' ? [200, 392] : state.room === 'sabbatfeld' ? [440, 390] : state.room === 'zollhaus' ? [430, 380] : state.room === 'haus' ? [430, 372] : state.room === 'see' ? [210, 395] : [700, 380] },
   freund:   { color: '#a8e090', pos: () => state.room === 'kapernaum' ? [360, 378] : state.room === 'haus' ? [160, 382] : [480, 380] },
   gelaehmter:{ color: '#d8c8b0', pos: () => state.room === 'haus' ? (F.mannGeheilt ? [470, 372] : (fx.trage > 0 ? [505, 245 + fx.trage * 125] : [165, 420])) : [480, 380] },
   pharisaeer:{ color: '#f0d080', pos: () => state.room === 'pharisaeerhaus' ? [350, 390] : state.room === 'synagoge2' ? [700, 392] : state.room === 'sabbatfeld' ? [770, 372] : state.room === 'zollhaus' ? [720, 360] : state.room === 'haus' ? [650, 355] : [660, 380] },
@@ -325,6 +336,8 @@ const ACTORS = {
   johanna:  { color: '#b8d8e8', pos: () => [260, 388] },
   susanna:  { color: '#d8c8a0', pos: () => [310, 388] },
   saemann:  { color: '#e8cf8a', pos: () => [470, 382] },
+  gerasener:{ color: '#e2c4a8', pos: () => [585, 390] },
+  schweinehirt:{ color: '#f0bf78', pos: () => [800, 360] },
   levizoellner:{ color: '#e8b070', pos: () => state.room === 'zollhaus' ? (F.gaesteEingeladen ? [610, 350] : F.zoellnerCalled ? [760, 372] : [548, 376]) : [520, 380] },
   zoellner: { color: '#c8b0e8', pos: () => [310, 385] },
   juenger:  { color: '#c0d8ff', pos: () => state.room === 'sturmsee' ? [470, 350] : state.room === 'ebene' ? [660, 380] : state.room === 'berg' ? [300, 400] : state.room === 'sabbatfeld' ? [420, 382] : [500, 380] },
@@ -2333,6 +2346,111 @@ async function sturmStillungCutscene() {
   await say('juenger', 'Wer ist dieser? Er gebietet sogar den Winden und dem Wasser, und sie gehorchen ihm!');
   await say('levi', 'Vor einem Augenblick konnte ich mein eigenes Schreien nicht hören. Jetzt höre ich jeden Tropfen vom Segel fallen.');
   await say('joel', '(Wir hatten gegen Wasser und Wind gekämpft. Er sprach – und beide hörten besser auf ihn als wir.)');
+  await animate(1800, p => { fx.fade = p; });
+  await chapterTwenty();
+}
+
+/* ============================================================
+   KAPITEL 20: DER MANN IM GEBIET DER GERASENER (Lukas 8,26-39)
+   ============================================================ */
+
+async function chapterTwenty() {
+  state.room = 'gerasenerland';
+  player.x = 120; player.y = 510;
+  player.tx = player.x; player.ty = player.y;
+  player.walking = false; player.facing = 1;
+  fx.schweineLauf = 0;
+  await animate(1200, p => { fx.fade = 1 - p; });
+  await say('erzaehler', 'KAPITEL 20: DER MANN IM GEBIET DER GERASENER');
+  await say('erzaehler', 'Sie fuhren weiter in das Gebiet der Gerasener, das Galiläa gegenüberliegt. (Lukas 8,26)');
+  F.gerasaAngekommen = true;
+  await say('joel', '(Das Boot berührt das Ufer. Über dem Strand liegen kahle Hänge, Grabhöhlen und eine große Schweineherde.)');
+  await legionCutscene();
+}
+
+async function legionCutscene() {
+  await say('erzaehler', 'Als Jesus an Land ging, kam ihm ein Mann aus der Stadt entgegen, der von Dämonen gequält wurde. Seit langer Zeit trug er keine Kleidung und lebte nicht in einem Haus, sondern in den Grabhöhlen. (Lukas 8,27)');
+  await say('erzaehler', 'Als er Jesus sah, schrie er auf, warf sich vor ihm nieder und rief laut:');
+  await say('gerasener', 'Was habe ich mit dir zu schaffen, Jesus, Sohn Gottes, des Höchsten? Ich bitte dich: Quäle mich nicht! (Lukas 8,28)');
+  await say('erzaehler', 'Jesus hatte dem unreinen Geist befohlen, den Mann zu verlassen. Oft hatte der Geist ihn gepackt; Ketten und Fesseln hatte er zerrissen, und er war in die Einöde getrieben worden. (Lukas 8,29)');
+  await say('jesus', 'Wie heißt du?');
+  await say('gerasener', 'Legion.');
+  await say('erzaehler', 'Denn viele Dämonen waren in ihn gefahren. Sie baten Jesus, ihnen nicht zu befehlen, in den Abgrund zu fahren. (Lukas 8,30-31)');
+  await say('gerasener', 'Dort am Hang weidet eine große Schweineherde. Erlaube uns, in sie zu fahren.');
+  await say('erzaehler', 'Jesus erlaubte es ihnen. Da verließen die Dämonen den Mann und fuhren in die Schweine. (Lukas 8,32-33)');
+  await animate(1700, p => { fx.schweineLauf = p; });
+  F.schweineFort = true;
+  F.mannBefreit = true;
+  await say('erzaehler', 'Die Herde stürmte den Abhang hinunter in den See und ertrank.');
+  await say('schweinehirt', 'Zur Stadt! Sagt allen, was hier geschehen ist!');
+  F.hirtenBerichten = true;
+  await say('erzaehler', 'Als die Hirten sahen, was geschehen war, flohen sie und berichteten es in der Stadt und auf den Höfen. (Lukas 8,34)');
+  await wait(600);
+  await say('joel', '(Der Mann sitzt jetzt still bei Jesus. Keine zerrissene Kette bewegt sich mehr. Nur sein Atem geht schwer.)');
+  await say('levi', 'Im Boot liegt noch ein sauberer Reisemantel. Bring ihn her, Joel. Und dann hör dem Mann zu – vielleicht hat lange niemand mehr seine eigene Stimme gehört.');
+}
+
+async function nimmGerasaMantel() {
+  if (F.mantelGenommen) {
+    await say('joel', 'Den Reisemantel habe ich bereits.');
+    return;
+  }
+  F.mantelGenommen = true;
+  addItem('mantel');
+  await say('joel', 'Ein trockener Mantel aus dem Boot. Nach der Nacht auf dem See ist er fast das Einzige, was noch nicht nass ist.');
+}
+
+async function gibGerasaMantel(it) {
+  if (it !== 'mantel') {
+    await say('joel', 'Das braucht er jetzt nicht. Der Reisemantel aus dem Boot wäre richtig.');
+    return;
+  }
+  if (F.mantelGegeben) {
+    await say('joel', 'Er trägt den Mantel bereits.');
+    return;
+  }
+  removeItem('mantel');
+  F.mantelGegeben = true;
+  await say('joel', '(Ich lege ihm den Mantel um die Schultern. Er zieht den Stoff langsam zusammen, als müsste er sich erst wieder an Schutz gewöhnen.)');
+  await say('gerasener', 'Danke.');
+  await checkGerasaBewohner();
+}
+
+async function redeMitBefreitem() {
+  if (!F.mannBefreit) {
+    await say('joel', '(Nicht jetzt. Seine Worte richten sich an Jesus, und etwas in ihnen ist nicht seine eigene Stimme.)');
+    return;
+  }
+  if (F.mannAngehoert) {
+    if (F.mannGesandt) await say('gerasener', 'Ich gehe nach Hause. Sie sollen erfahren, was Gott für mich getan hat.');
+    else await say('gerasener', 'Ich will bei Jesus bleiben. Bei ihm bin ich wieder ich selbst.');
+    return;
+  }
+  F.mannAngehoert = true;
+  await say('joel', 'Du musst mir nichts erklären. Ich bleibe einfach einen Augenblick hier.');
+  await say('gerasener', 'Lange war in mir keine Stille. Jetzt kann ich das Wasser hören. Und meinen eigenen Atem.');
+  await say('joel', 'Dann hören wir beides. Die Worte können warten.');
+  await checkGerasaBewohner();
+}
+
+async function checkGerasaBewohner() {
+  if (F.mannBefreit && F.mantelGegeben && F.mannAngehoert && F.hirtenBerichten && !F.bewohnerDa) {
+    await gerasaBewohnerCutscene();
+  }
+}
+
+async function gerasaBewohnerCutscene() {
+  F.bewohnerDa = true;
+  await wait(700);
+  await say('erzaehler', 'Die Menschen kamen, um zu sehen, was geschehen war. Sie fanden den Mann, aus dem die Dämonen ausgefahren waren, bekleidet und bei klarem Verstand zu Jesu Füßen sitzen. Da fürchteten sie sich. (Lukas 8,35)');
+  await say('erzaehler', 'Die Augenzeugen berichteten ihnen, wie der Mann befreit worden war. (Lukas 8,36)');
+  await say('menge', 'Geh fort von uns! Bitte verlass unser Gebiet!');
+  await say('erzaehler', 'Die ganze Bevölkerung bat Jesus fortzugehen, denn große Furcht hatte sie ergriffen. Jesus stieg in das Boot, um zurückzufahren. (Lukas 8,37)');
+  await say('gerasener', 'Herr, lass mich mit dir gehen!');
+  await say('jesus', 'Kehre in dein Haus zurück und erzähle, was Gott für dich getan hat. (Lukas 8,38-39)');
+  F.mannGesandt = true;
+  await say('erzaehler', 'Da ging der Mann fort und verkündete in der ganzen Stadt, was Jesus für ihn getan hatte. (Lukas 8,39)');
+  await say('joel', '(Die Bewohner baten Jesus zu gehen. Der Mann blieb – nicht als Erinnerung an seine Qual, sondern als lebendiges Zeugnis seiner Befreiung.)');
   F.ended = true;
   await animate(1800, p => { fx.fade = p; });
   const debugPanel = document.getElementById('debug');
@@ -4665,6 +4783,80 @@ const rooms = {
         look: async () => {
           if (F.sturmGestillt) await say('joel', 'Glatt bis zum Horizont. Als hätte der See selbst erschrocken aufgehört zu atmen.');
           else await say('joel', 'Wellen wie dunkle Hügel. Jede einzelne scheint hoch genug, um unser Boot zu begraben.');
+        },
+      },
+    ],
+  },
+
+  gerasenerland: {
+    hotspots: [
+      {
+        id: 'gerasener_mann', name: 'Befreiter Mann', rect: [548, 338, 78, 138], walk: [530, 510],
+        look: async () => {
+          if (!F.mannBefreit) await say('joel', 'Zerrissene Fesseln hängen an seinen Armen. Sein Blick scheint zugleich auf Jesus und durch ihn hindurch gerichtet.');
+          else if (F.mantelGegeben) await say('joel', 'Bekleidet und ruhig sitzt er bei Jesu Füßen. Derselbe Mensch – und doch ist alles an ihm verändert.');
+          else await say('joel', 'Er sitzt still bei Jesus. Die Unruhe ist aus seinem Gesicht gewichen, aber er braucht Schutz und Kleidung.');
+        },
+        talk: redeMitBefreitem,
+        giveItem: gibGerasaMantel,
+        useItem: gibGerasaMantel,
+      },
+      {
+        id: 'mantel_boot_gerasa', name: 'Reisemantel im Boot', rect: [86, 420, 104, 62], walk: [205, 510],
+        visible: () => F.mannBefreit && !F.mantelGenommen,
+        look: async () => { await say('joel', 'Ein sauberer Mantel liegt über der Bank im Boot. Genau das, was der befreite Mann jetzt braucht.'); },
+        take: nimmGerasaMantel,
+      },
+      {
+        id: 'jesus_gerasa', name: 'Jesus', rect: [462, 318, 70, 132], walk: [450, 510],
+        look: async () => { await say('joel', 'Nach Wind und Wellen steht ihm nun etwas anderes gegenüber, das Menschen ebenso wenig bändigen konnten.'); },
+        talk: async () => {
+          if (F.mannGesandt) await say('joel', '(Jesus hat ihm einen Weg gegeben: zurück nach Hause, mitten unter die Menschen, die ihn nur als Gefangenen seiner Qual kannten.)');
+          else if (F.mannBefreit) await say('joel', '(Jesus bleibt bei dem Mann. Erst sollen die Menschen sehen, was aus ihm geworden ist.)');
+          else await say('joel', '(Seine ganze Aufmerksamkeit gilt dem Mann und der Stimme, die aus ihm spricht.)');
+        },
+      },
+      {
+        id: 'levi_gerasa', name: 'Levi', rect: [176, 354, 62, 120], walk: [245, 510],
+        look: async () => { await say('joel', 'Levi betrachtet abwechselnd die leeren Gräber, den ruhigen Mann und die Spuren der Herde am Hang.'); },
+        talk: async () => {
+          if (!F.mantelGenommen) await say('levi', 'Der Mantel liegt noch im Boot. Bring ihn dem Mann, Joel.');
+          else if (!F.mantelGegeben) await say('levi', 'Du hast den Mantel. Gib ihn dem Mann – nicht nur gegen die Kälte.');
+          else if (!F.mannAngehoert) await say('levi', 'Setz dich zu ihm und rede mit ihm. Oder hör einfach zu. Das ist manchmal mehr.');
+          else await say('levi', 'Die Hirten haben die Stadt erreicht. Gleich werden Menschen kommen, und sie werden entscheiden müssen, was sie hier sehen wollen.');
+        },
+      },
+      {
+        id: 'bewohner_gerasa', name: 'Bewohner der Gegend', rect: [700, 324, 210, 154], walk: [680, 510],
+        visible: () => F.bewohnerDa,
+        look: async () => { await say('joel', 'Sie sehen den befreiten Mann und erschrecken nicht über seine Unruhe, sondern über seine Ruhe.'); },
+        talk: async () => { await say('menge', 'Wir haben gehört, was mit der Herde geschehen ist. Geh fort aus unserem Gebiet!'); },
+      },
+      {
+        id: 'ketten_gerasa', name: 'Zerrissene Ketten', rect: [342, 432, 92, 58], walk: [350, 510],
+        look: async () => { await say('joel', 'Schwere Glieder, verbogen und auseinandergerissen. Menschen hatten versucht, seine Qual mit Eisen festzuhalten.'); },
+        take: async () => { await say('joel', 'Nein. Diese Ketten bleiben hier – als etwas, das er nie wieder tragen soll.'); },
+      },
+      {
+        id: 'graeber_gerasa', name: 'Grabhöhlen', rect: [0, 126, 330, 250], noWalk: true,
+        look: async () => { await say('joel', 'Höhlen im dunklen Fels. Lange waren sie sein einziger Aufenthaltsort, fern von Häusern und Menschen.'); },
+      },
+      {
+        id: 'schweinehang_gerasa', name: 'Hang der Schweineherde', rect: [650, 130, 310, 180], noWalk: true,
+        look: async () => {
+          if (F.schweineFort) await say('joel', 'Aufgerissene Erde und eine breite Spur bis zum Wasser. Die Herde ist verschwunden.');
+          else await say('joel', 'Eine große Schweineherde weidet am steilen Hang über dem See. Ihre Hirten beobachten uns misstrauisch.');
+        },
+      },
+      {
+        id: 'boot_gerasa', name: 'Boot am Ufer', rect: [46, 372, 190, 116], walk: [230, 510],
+        look: async () => { await say('joel', 'Das Boot liegt ruhig am fremden Ufer. Nach dem Sturm wirkt selbst sein nasses Holz wie ein sicherer Ort.'); },
+      },
+      {
+        id: 'see_gerasa', name: 'See Gennesaret', rect: [620, 410, 340, 130], noWalk: true,
+        look: async () => {
+          if (F.schweineFort) await say('joel', 'Kreise laufen über das Wasser am Fuß des Hangs. Darüber ist der See wieder still.');
+          else await say('joel', 'Derselbe See, der eben noch tobte. Nun liegt er ruhig unter dem Hang der Herde.');
         },
       },
     ],
@@ -7216,6 +7408,158 @@ function drawSturmsee(t) {
   }
 }
 
+function drawSchwein(x, y, scale = 1, facing = 1) {
+  ctx.fillStyle = '#b98578';
+  ctx.beginPath(); ctx.ellipse(x, y, 24 * scale, 13 * scale, 0, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(x + facing * 21 * scale, y - 3 * scale, 11 * scale, 9 * scale, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = '#d3a095';
+  ctx.beginPath(); ctx.ellipse(x + facing * 29 * scale, y, 7 * scale, 5 * scale, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = '#513a35';
+  ctx.beginPath(); ctx.arc(x + facing * 23 * scale, y - 6 * scale, 2 * scale, 0, 7); ctx.fill();
+  ctx.strokeStyle = '#7b574e';
+  ctx.lineWidth = Math.max(1, 2 * scale);
+  for (const lx of [-13, 10]) {
+    ctx.beginPath(); ctx.moveTo(x + lx * scale, y + 9 * scale); ctx.lineTo(x + lx * scale, y + 22 * scale); ctx.stroke();
+  }
+  ctx.beginPath();
+  ctx.arc(x - facing * 24 * scale, y - 2 * scale, 6 * scale, 0.2, Math.PI * 1.8);
+  ctx.stroke();
+}
+
+/* --------------- Raum: Das Gebiet der Gerasener --------------- */
+
+function drawGerasenerland(t) {
+  const sky = ctx.createLinearGradient(0, 0, 0, 380);
+  sky.addColorStop(0, '#829fb0');
+  sky.addColorStop(0.65, '#c8c49f');
+  sky.addColorStop(1, '#dfbf85');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, 390);
+  glow(835, 92, 105, 'rgba(255,224,150,A)', 0.18);
+  ctx.fillStyle = '#f3d991';
+  ctx.beginPath(); ctx.arc(835, 92, 20, 0, 7); ctx.fill();
+
+  // Felswand mit Grabhöhlen
+  ctx.fillStyle = '#69665d';
+  ctx.beginPath();
+  ctx.moveTo(0, 120); ctx.lineTo(112, 100); ctx.lineTo(205, 136); ctx.lineTo(330, 116);
+  ctx.lineTo(365, 405); ctx.lineTo(0, 430); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#56544f';
+  for (const [x, y, w, h] of [[40, 190, 82, 116], [154, 166, 92, 132], [262, 224, 68, 98]]) {
+    ctx.beginPath();
+    ctx.moveTo(x, y + h); ctx.lineTo(x, y + 36);
+    ctx.quadraticCurveTo(x + w / 2, y - 8, x + w, y + 36);
+    ctx.lineTo(x + w, y + h); ctx.closePath(); ctx.fill();
+    px(x + 10, y + h - 8, w - 20, 8, '#81796a');
+  }
+  ctx.strokeStyle = '#858077';
+  ctx.lineWidth = 3;
+  for (let i = 0; i < 14; i++) {
+    const x = 18 + (i * 71) % 320;
+    const y = 145 + (i * 47) % 245;
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 18, y + 8); ctx.stroke();
+  }
+
+  // Hang, fernes Dorf und Ufer
+  ctx.fillStyle = '#78825c';
+  ctx.beginPath();
+  ctx.moveTo(330, 292); ctx.quadraticCurveTo(650, 176, 960, 240);
+  ctx.lineTo(960, 468); ctx.lineTo(320, 468); ctx.closePath(); ctx.fill();
+  for (const [x, y, w, h] of [[782, 174, 45, 34], [836, 158, 54, 50], [898, 183, 38, 29]]) {
+    px(x, y, w, h, '#c4ad7d');
+    px(x - 4, y - 8, w + 8, 10, '#76553a');
+    px(x + 10, y + 15, 10, h - 15, '#58402d');
+  }
+  px(0, 418, 700, 122, '#a88b60');
+  ctx.fillStyle = '#397187';
+  ctx.beginPath();
+  ctx.moveTo(620, 405); ctx.quadraticCurveTo(780, 386, 960, 410);
+  ctx.lineTo(960, 540); ctx.lineTo(610, 540); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#91b8bb';
+  ctx.lineWidth = 3;
+  for (let row = 0; row < 4; row++) {
+    const y = 430 + row * 26;
+    ctx.beginPath();
+    for (let x = 620; x <= 980; x += 24) {
+      const yy = y + Math.sin(x * 0.04 + t * 1.4 + row) * 4;
+      if (x === 620) ctx.moveTo(x, yy); else ctx.lineTo(x, yy);
+    }
+    ctx.stroke();
+  }
+
+  // Boot am Ufer mit Mantel
+  ctx.fillStyle = '#4b3021';
+  ctx.beginPath(); ctx.moveTo(42, 430); ctx.lineTo(244, 430); ctx.lineTo(214, 486); ctx.lineTo(78, 486); ctx.closePath(); ctx.fill();
+  px(55, 422, 178, 10, '#9b7046');
+  px(112, 365, 8, 62, '#5b402b');
+  if (F.mannBefreit && !F.mantelGenommen) {
+    px(92, 408, 72, 18, '#8d4e49');
+    px(100, 398, 56, 12, '#b16c62');
+  }
+
+  // Schweineherde läuft den Hang hinunter.
+  if (!F.schweineFort) {
+    const p = fx.schweineLauf;
+    for (let i = 0; i < 13; i++) {
+      const col = i % 5;
+      const row = Math.floor(i / 5);
+      const startX = 660 + col * 52 + row * 18;
+      const startY = 270 + row * 34 + (col % 2) * 9;
+      const x = startX + p * (100 - col * 7);
+      const y = startY + p * (160 - row * 8);
+      drawSchwein(x, y, 0.62 + row * 0.08, 1);
+    }
+    if (!F.hirtenBerichten) {
+      drawPerson(800, 344, { tunic: '#8b6037', cloth: '#f0bf78', facing: -1 });
+      drawPerson(868, 326, { tunic: '#665d3d', cloth: '#d8c08a', facing: -1 });
+    }
+  } else {
+    // Spuren am Hang und Kreise auf dem Wasser
+    ctx.strokeStyle = '#65543c';
+    ctx.lineWidth = 5;
+    for (let i = 0; i < 5; i++) {
+      ctx.beginPath(); ctx.moveTo(680 + i * 35, 286 + i * 7); ctx.lineTo(760 + i * 25, 420); ctx.stroke();
+    }
+    ctx.strokeStyle = 'rgba(200,225,225,0.7)';
+    ctx.lineWidth = 3;
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath(); ctx.ellipse(790 + i * 55, 455 + i * 9, 30 + i * 8, 8 + i * 2, 0, 0, 7); ctx.stroke();
+    }
+  }
+
+  // Zerrissene Ketten
+  ctx.strokeStyle = '#777b7d';
+  ctx.lineWidth = 5;
+  for (let i = 0; i < 5; i++) {
+    ctx.beginPath(); ctx.ellipse(360 + i * 15, 464 + (i % 2) * 8, 10, 6, -0.3, 0, 7); ctx.stroke();
+  }
+  ctx.beginPath(); ctx.moveTo(426, 470); ctx.lineTo(446, 452); ctx.stroke();
+
+  // Jesus, Levi und der Mann
+  drawPerson(500, 472, { tunic: '#e8e4d4', cloth: '#c8b89a', facing: 1 });
+  drawPerson(200, 486, { tunic: '#5d7a4a', cloth: '#d8d8d8', facing: 1 });
+  if (F.mannBefreit) {
+    drawPerson(585, 486, {
+      tunic: F.mantelGegeben ? '#8d4e49' : '#796653',
+      cloth: F.mantelGegeben ? '#c99a8d' : '#bba88e',
+      mode: 'sit', facing: -1,
+    });
+  } else {
+    drawPerson(585, 480, { tunic: '#6c5a48', cloth: '#9b8972', facing: -1 });
+    ctx.strokeStyle = '#777b7d'; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(564, 432); ctx.lineTo(540, 458); ctx.stroke();
+  }
+
+  // Bewohner kommen aus Stadt und Höfen.
+  if (F.bewohnerDa) {
+    drawPerson(700, 388, { tunic: '#6a6380', cloth: '#c5b8db', facing: -1 });
+    drawPerson(750, 382, { tunic: '#806243', cloth: '#d5c09a', facing: -1 });
+    drawPerson(802, 388, { tunic: '#4f7180', cloth: '#b7d0d6', facing: -1 });
+    drawPerson(852, 384, { tunic: '#76526b', cloth: '#d2b3c7', facing: -1 });
+    drawKid(895, 394, { tunic: '#5f8060', cloth: '#674832', facing: -1 });
+  }
+}
+
 /* --------------- Sprechtext --------------- */
 
 function wrapText(text, maxW) {
@@ -7304,10 +7648,11 @@ function loop(now) {
   else if (state.room === 'pharisaeerhaus') drawPharisaeerhaus(t);
   else if (state.room === 'saemannfeld') drawSaemannfeld(t);
   else if (state.room === 'sturmsee') drawSturmsee(t);
+  else if (state.room === 'gerasenerland') drawGerasenerland(t);
   else drawStable(t);
 
   if (player.visible) {
-    const alt = state.room === 'nazaret' || state.room === 'synagoge' || state.room === 'see' || state.room === 'haus' || state.room === 'zollhaus' || state.room === 'sabbatfeld' || state.room === 'synagoge2' || state.room === 'berg' || state.room === 'ebene' || state.room === 'kapernaum' || state.room === 'nain' || state.room === 'johannesfrage' || state.room === 'pharisaeerhaus' || state.room === 'saemannfeld' || state.room === 'sturmsee';   // Joel ist ergraut
+    const alt = state.room === 'nazaret' || state.room === 'synagoge' || state.room === 'see' || state.room === 'haus' || state.room === 'zollhaus' || state.room === 'sabbatfeld' || state.room === 'synagoge2' || state.room === 'berg' || state.room === 'ebene' || state.room === 'kapernaum' || state.room === 'nain' || state.room === 'johannesfrage' || state.room === 'pharisaeerhaus' || state.room === 'saemannfeld' || state.room === 'sturmsee' || state.room === 'gerasenerland';   // Joel ist ergraut
     drawPerson(player.x, player.y, {
       tunic: '#8a6b3f', cloth: alt ? '#c8c8c8' : '#c9b48a',
       facing: player.facing,
@@ -7806,6 +8151,26 @@ const DEBUG_PRESETS = {
     inv: ['stab'],
     action: async () => { await cutscene(() => sturmStillungCutscene()); },
   },
+  'Kapitel 20: Begegnung mit Legion': {
+    room: 'gerasenerland', pos: [120, 510], facing: 1,
+    flags: { tookStaff: true, sturmGestillt: true, gerasaAngekommen: true },
+    inv: ['stab'],
+    action: async () => { await cutscene(() => legionCutscene()); },
+  },
+  'Kapitel 20: Nach der Befreiung': {
+    room: 'gerasenerland', pos: [300, 510], facing: 1,
+    flags: { tookStaff: true, sturmGestillt: true, gerasaAngekommen: true,
+             mannBefreit: true, schweineFort: true, hirtenBerichten: true },
+    inv: ['stab'],
+  },
+  'Kapitel 20: Die Bewohner kommen': {
+    room: 'gerasenerland', pos: [540, 510], facing: 1,
+    flags: { tookStaff: true, sturmGestillt: true, gerasaAngekommen: true,
+             mannBefreit: true, schweineFort: true, hirtenBerichten: true,
+             mantelGenommen: true, mantelGegeben: true, mannAngehoert: true },
+    inv: ['stab'],
+    action: async () => { await cutscene(() => gerasaBewohnerCutscene()); },
+  },
 };
 
 function applyPreset(p) {
@@ -7829,6 +8194,7 @@ function applyPreset(p) {
   fx.mitte = F.handGeheilt ? 1 : 0;
   fx.morgen = F.zwoelfDone ? 1 : 0;
   fx.sturm = F.sturmBegonnen && !F.sturmGestillt ? 1 : 0;
+  fx.schweineLauf = F.schweineFort ? 1 : 0;
   fx.fade = 0;
   speech = null;
   document.getElementById('title').classList.add('hidden');

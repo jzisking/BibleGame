@@ -1,4 +1,4 @@
-# ⭐ Ein Stern über Bethlehem — Kapitel 1–19
+# ⭐ Ein Stern über Bethlehem — Kapitel 1–20
 
 Ein Point-&-Click-Adventure im Stil von *Monkey Island* (SCUMM-Verben, Inventar,
 Dialog-Bäume), das die Geschichte der Evangelien aus Joels Perspektive erzählt.
@@ -431,6 +431,26 @@ richtigen Hören sowie die Begegnung mit seiner Mutter und seinen Brüdern auf
 Reaktion folgen Lukas 8,22–25. Joels Arbeit an Segel und Wasser ist spielerische
 Rahmung; geweckt wird Jesus weiterhin von den Jüngern.
 
+## Kapitel 20: Der Mann im Gebiet der Gerasener (Lukas 8,26–39)
+
+Direkt nach der Stillung des Sturms erreicht das Boot das gegenüberliegende
+Ufer. Ein von vielen Dämonen gequälter Mann kommt Jesus aus den Grabhöhlen
+entgegen.
+
+- Die Begegnung folgt Lukas 8,27–33: Der Mann fällt vor Jesus nieder, die Stimme
+  nennt sich „Legion", und die Dämonen bitten darum, in eine Schweineherde fahren
+  zu dürfen. Die Herde läuft sichtbar den Hang hinunter und stürzt in den See.
+- Nach der Befreiung bringt Joel dem ruhig bei Jesus sitzenden Mann einen Mantel
+  aus dem Boot und hört ihm zu. Diese zwei stillen Aufgaben bereiten das Bild aus
+  Lukas 8,35 vor: bekleidet, bei klarem Verstand und zu Jesu Füßen.
+- Die Bewohner kommen, erschrecken und bitten Jesus, ihr Gebiet zu verlassen.
+  Der befreite Mann möchte mitfahren, wird aber nach Hause gesandt, um zu erzählen,
+  was Gott für ihn getan hat (Lukas 8,36–39).
+
+*Hinweis zur biblischen Einordnung:* Begegnung, Befreiung, Herde, Reaktion der
+Bewohner und Sendung folgen Lukas 8,26–39. Mantel und Joels Gespräch sind die
+spielerische Rahmung; die Befreiung bleibt vollständig Jesu Handlung.
+
 ## Technik
 
 - Reines HTML/CSS/JavaScript, eine einzige Canvas-Szene pro Raum, keine Abhängigkeiten.
@@ -445,8 +465,9 @@ Rahmung; geweckt wird Jesus weiterhin von den Jüngern.
   (Straße vor dem Haus des Hauptmanns) und `nain` (vor dem Stadttor von
   Nain), `johannesfrage` (die Boten des Johannes), `pharisaeerhaus` (die
   Sünderin im Haus des Pharisäers), `saemannfeld` (das Gleichnis vom Sämann)
-  sowie `sturmsee` (die Stillung des Sturms). Neue Kapitel lassen sich als
-  weitere Einträge in `rooms` ergänzen.
+  `sturmsee` (die Stillung des Sturms) sowie `gerasenerland` (der befreite Mann
+  und die Reaktion der Bewohner). Neue Kapitel lassen sich als weitere Einträge
+  in `rooms` ergänzen.
 
 ## Debug-Modus
 
@@ -472,4 +493,4 @@ ignoriert. Zwei Auswege:
 
 ## Geplante Fortsetzung
 
-Kapitel 20: *Der Mann im Gebiet der Gerasener* (Lukas 8,26–39).
+Kapitel 21: *Die Tochter des Jairus und die leidende Frau* (Lukas 8,40–56).
